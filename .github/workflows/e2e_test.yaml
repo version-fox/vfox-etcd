@@ -48,7 +48,6 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           vfox install etcd@3.5.12
-          eval "$(vfox activate bash)"
           vfox use -g etcd@3.5.12
           echo "===============PATH==============="
           echo $PATH
@@ -58,7 +57,6 @@ jobs:
         if: runner.os == 'MacOS'
         run: |
           vfox install etcd@3.5.12
-          eval "$(vfox activate zsh)"
           vfox use -g etcd@3.5.12
           echo "===============PATH==============="
           echo $PATH
@@ -68,7 +66,6 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           vfox install etcd@3.5.12
-          eval "$(vfox activate pwsh)"
           vfox use -g etcd@3.5.12
           echo "===============PATH==============="
           echo $env:PATH
