@@ -48,16 +48,18 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           vfox install etcd@3.5.12
-          vfox use etcd@3.5.12
+          vfox use -g etcd@3.5.12
+          etcdctl version
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
 
-      - name: install Etcd by vfox-etcd plugin (Darwin)
-        if: runner.os == 'MacOS'
+      - name: install Etcd by vfox-etcd plugin (Windows)
+        if: runner.os == 'Windows'
         run: |
           vfox install etcd@3.5.12
-          vfox use etcd@3.5.12
+          vfox use -g etcd@3.5.12
+          etcdctl version
           echo "===============PATH==============="
-          echo $PATH
+          echo $env:PATH
           echo "===============PATH==============="
