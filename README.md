@@ -6,7 +6,7 @@ Etcd [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multi
 
 ```shell
 # install plugin
-vfox add --source https://github.com/yeshan333/vfox-etcd/archive/refs/heads/main.zip etcd
+vfox add --source https://github.com/version-fox/vfox-etcd/archive/refs/heads/main.zip etcd
 
 # install an available version
 vofx search etcd

@@ -42,7 +42,7 @@ jobs:
 
       - name: add vfox-etcd plugin
         run: |
-          vfox add --source https://github.com/yeshan333/vfox-etcd/archive/refs/heads/main.zip etcd
+          vfox add --source https://github.com/version-fox/vfox-etcd/archive/refs/heads/main.zip etcd
 
       - name: install Etcd by vfox-etcd plugin (Linux)
         if: runner.os == 'Linux'
