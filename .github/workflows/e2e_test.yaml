@@ -38,8 +38,8 @@ jobs:
       - name: install Etcd by vfox-etcd plugin (Linux)
         if: runner.os == 'Linux'
         run: |
-          vfox install etcd@3.4.28
-          vfox use etcd@3.4.28
+          vfox install etcd@3.5.12
+          vfox use etcd@3.5.12
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
@@ -47,8 +47,8 @@ jobs:
       - name: install Etcd by vfox-etcd plugin (Darwin)
         if: runner.os == 'MacOS'
         run: |
-          vfox install etcd@3.4.28
-          vfox use etcd@3.4.28
+          vfox install etcd@3.5.12
+          vfox use etcd@3.5.12
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
