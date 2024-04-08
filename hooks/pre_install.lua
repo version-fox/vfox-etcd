@@ -9,9 +9,9 @@ function PLUGIN:PreInstall(ctx)
     local etcd_version = ctx.version    
     local download_url
     if RUNTIME.osType == "Linux" then
-        download_url = "https://github.com/etcd-io/etcd/releases/download/v" .. etcd_version .. "/etcd-v" .. etcd_version .. "-" .. string.lower(RUNTIME.OS_TYPE) .. "-" .. string.lower(RUNTIME.archType) .. ".tar.gz"
+        download_url = "https://github.com/etcd-io/etcd/releases/download/v" .. etcd_version .. "/etcd-v" .. etcd_version .. "-" .. string.lower(RUNTIME.osType) .. "-" .. string.lower(RUNTIME.archType) .. ".tar.gz"
     else
-        download_url = "https://github.com/etcd-io/etcd/releases/download/v" .. etcd_version .. "/etcd-v" .. etcd_version .. "-" .. string.lower(RUNTIME.OS_TYPE) .. "-" .. string.lower(RUNTIME.archType) .. ".zip"
+        download_url = "https://github.com/etcd-io/etcd/releases/download/v" .. etcd_version .. "/etcd-v" .. etcd_version .. "-" .. string.lower(RUNTIME.osType) .. "-" .. string.lower(RUNTIME.archType) .. ".zip"
     end
     
     return {
