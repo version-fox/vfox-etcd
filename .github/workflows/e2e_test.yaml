@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         # ref: https://github.com/actions/runner-images
-        os: [ubuntu-20.04, macos-13]
+        os: [ubuntu-20.04, macos-13, windows-2022]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +30,13 @@ jobs:
           brew install vfox
           echo 'eval "$(vfox activate bash)"' >> ~/.bashrc
           echo 'eval "$(vfox activate zsh)"' >> ~/.zshrc
-      
+
+      - name: install vfox (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/version-fox/vfox/releases/download/v0.3.1/vfox_0.3.1_windows_setup_x86_64.exe" -OutFile "vfox.exe"
+          .\vfox.exe          
+
       - name: add vfox-erlang plugin
         run: |
           vfox add --source https://github.com/yeshan333/vfox-etcd/archive/refs/heads/main.zip etcd
