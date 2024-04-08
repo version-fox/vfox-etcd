@@ -49,7 +49,7 @@ jobs:
         shell: bash -leo pipefail {0}
         run: |
           vfox install etcd@3.5.12
-          vfox activate bash
+          eval "$(vfox activate bash)"
           vfox use -g etcd@3.5.12
           echo "===============PATH==============="
           echo $PATH
@@ -60,7 +60,7 @@ jobs:
         shell: zsh
         run: |
           vfox install etcd@3.5.12
-          vfox activate zsh
+          eval "$(vfox activate zsh)"
           vfox use -g etcd@3.5.12
           echo "===============PATH==============="
           echo $PATH
@@ -71,8 +71,8 @@ jobs:
         shell: pwsh
         run: |
           vfox install etcd@3.5.12
+          eval "$(vfox activate pwsh)"
           vfox use -g etcd@3.5.12
-          vfox activate pwsh
           echo "===============PATH==============="
           echo $env:PATH
           echo "===============PATH==============="
