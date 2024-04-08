@@ -46,33 +46,33 @@ jobs:
 
       - name: install Etcd by vfox-etcd plugin (Linux)
         if: runner.os == 'Linux'
-        shell: bash -leo pipefail {0}
         run: |
           vfox install etcd@3.5.12
           eval "$(vfox activate bash)"
           vfox use -g etcd@3.5.12
+          etcdctl version
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
 
       - name: install Etcd by vfox-etcd plugin (Darwin)
         if: runner.os == 'MacOS'
-        shell: zsh
         run: |
           vfox install etcd@3.5.12
           eval "$(vfox activate zsh)"
           vfox use -g etcd@3.5.12
+          etcdctl version
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
 
       - name: install Etcd by vfox-etcd plugin (Windows)
         if: runner.os == 'Windows'
-        shell: pwsh
         run: |
           vfox install etcd@3.5.12
           eval "$(vfox activate pwsh)"
           vfox use -g etcd@3.5.12
+          etcdctl version
           echo "===============PATH==============="
           echo $env:PATH
           echo "===============PATH==============="
