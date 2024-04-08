@@ -1,5 +1,3 @@
--- local erlangUtils = require("erlang_utils")
-
 --- Returns some pre-installed information, such as version number, download address, local files, etc.
 --- If checksum is provided, vfox will automatically check it for you.
 --- @param ctx table
@@ -8,11 +6,12 @@
 function PLUGIN:PreInstall(ctx)
     local etcd_version = ctx.version    
     local download_url
-    if RUNTIME.osType == "Linux" then
+    if RUNTIME.osType == "linux" then
         download_url = "https://github.com/etcd-io/etcd/releases/download/v" .. etcd_version .. "/etcd-v" .. etcd_version .. "-" .. string.lower(RUNTIME.osType) .. "-" .. string.lower(RUNTIME.archType) .. ".tar.gz"
     else
         download_url = "https://github.com/etcd-io/etcd/releases/download/v" .. etcd_version .. "/etcd-v" .. etcd_version .. "-" .. string.lower(RUNTIME.osType) .. "-" .. string.lower(RUNTIME.archType) .. ".zip"
     end
+    print("etcd download url: " .. download_url)
     
     return {
         version = etcd_version,
