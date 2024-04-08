@@ -31,12 +31,11 @@ jobs:
           echo 'eval "$(vfox activate bash)"' >> ~/.bashrc
           echo 'eval "$(vfox activate zsh)"' >> ~/.zshrc
 
-      # vfox install not support silent
-      # - name: install vfox (Windows)
-      #   if: runner.os == 'Windows'
-      #   run: |
-      #     Invoke-WebRequest -Uri "https://github.com/version-fox/vfox/releases/download/v0.3.1/vfox_0.3.1_windows_setup_x86_64.exe" -OutFile "vfox.exe"
-      #     Start-Process -FilePath .\vfox.exe -ArgumentList '/S' -Wait       
+      - name: install vfox (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/version-fox/vfox/releases/download/v0.3.1/vfox_0.3.1_windows_setup_x86_64.exe" -OutFile "vfox.exe"
+          Start-Process -FilePath .\vfox.exe -Argument "/silent" -Wait    
 
       - name: add vfox-etcd plugin
         run: |
