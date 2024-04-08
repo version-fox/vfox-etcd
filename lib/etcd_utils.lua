@@ -15,4 +15,16 @@ function etcd_utils.get_etcd_release_verions()
     return result
 end
 
+function etcd_utils.get_sha256sums(etcd_version, file_name)
+    local resp, err = http.get({
+        url = "https://github.com/etcd-io/etcd/releases/download/v" .. etcd_version .. "/SHA256SUMS"
+    })
+    for line in string.gmatch(resp.body, '([^\n]+)') do
+        local checksum, name = string.match(line, '(%w+)%s+(%S+)')
+        if name == file_name then
+            return checksum
+        end
+    end
+end
+
 return etcd_utils
