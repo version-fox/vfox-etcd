@@ -50,7 +50,6 @@ jobs:
           vfox install etcd@3.5.12
           eval "$(vfox activate bash)"
           vfox use -g etcd@3.5.12
-          etcdctl version
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
@@ -61,7 +60,6 @@ jobs:
           vfox install etcd@3.5.12
           eval "$(vfox activate zsh)"
           vfox use -g etcd@3.5.12
-          etcdctl version
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
@@ -72,7 +70,6 @@ jobs:
           vfox install etcd@3.5.12
           eval "$(vfox activate pwsh)"
           vfox use -g etcd@3.5.12
-          etcdctl version
           echo "===============PATH==============="
           echo $env:PATH
           echo "===============PATH==============="
