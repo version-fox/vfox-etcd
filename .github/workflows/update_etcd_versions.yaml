@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  update_etcd_versions:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +30,10 @@ jobs:
           pwd
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"github-actions[bot]
-          git status -s
-          git add .
-          git commit -m "chore(versions.txt): update Etcd version file"
-          git push https://github-actions[bot]:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          if [[ -n $(git status -s) ]]; then
+            git add .
+            git commit -m "chore(versions.txt): update etcd version file"
+            git push https://github-actions[bot]:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          else
+            echo "never updated."
+          fi

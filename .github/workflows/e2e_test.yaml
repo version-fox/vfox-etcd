@@ -21,15 +21,12 @@ jobs:
           echo "deb [trusted=yes] https://apt.fury.io/versionfox/ /" | sudo tee /etc/apt/sources.list.d/versionfox.list
           sudo apt-get update
           sudo apt-get install vfox
-          echo 'eval "$(vfox activate bash)"' >> ~/.bashrc
       
       - name: install vfox (MacOS)
         if: runner.os == 'MacOS'
         run: |
           brew tap version-fox/tap
           brew install vfox
-          echo 'eval "$(vfox activate bash)"' >> ~/.bashrc
-          echo 'eval "$(vfox activate zsh)"' >> ~/.zshrc
 
       - name: install scoop (Windows)
         if: runner.os == 'Windows'
@@ -44,29 +41,35 @@ jobs:
         run: |
           vfox add --source https://github.com/version-fox/vfox-etcd/archive/refs/heads/main.zip etcd
 
-      - name: install Etcd by vfox-etcd plugin (Linux)
+      - name: install etcd by vfox-etcd plugin (Linux)
         if: runner.os == 'Linux'
         run: |
           vfox install etcd@3.5.12
           vfox use -g etcd@3.5.12
+          eval "$(vfox activate bash)"
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
+          etcd -version
 
-      - name: install Etcd by vfox-etcd plugin (Darwin)
+      - name: install etcd by vfox-etcd plugin (Darwin)
         if: runner.os == 'MacOS'
         run: |
           vfox install etcd@3.5.12
           vfox use -g etcd@3.5.12
+          eval "$(vfox activate bash)"
           echo "===============PATH==============="
           echo $PATH
           echo "===============PATH==============="
+          etcd -version
 
-      - name: install Etcd by vfox-etcd plugin (Windows)
+      - name: install etcd by vfox-etcd plugin (Windows)
         if: runner.os == 'Windows'
         run: |
           vfox install etcd@3.5.12
           vfox use -g etcd@3.5.12
+          Invoke-Expression "$(vfox activate pwsh)"
           echo "===============PATH==============="
           echo $env:PATH
           echo "===============PATH==============="
+          etcd -version

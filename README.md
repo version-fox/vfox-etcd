@@ -1,6 +1,6 @@
 # vfox-etcd plugin
 
-Etcd [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multiple Etcd versions in Linux/Darwin/Windows.
+etcd [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multiple etcd versions in Linux/Darwin/Windows.
 
 ## Usage
 
