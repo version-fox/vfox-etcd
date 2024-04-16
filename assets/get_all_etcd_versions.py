@@ -1,7 +1,7 @@
 import json
 import requests
 
-# fetch version: -> https://api.github.com/repos/etcd-io/etcd/tags?per_page=100&sort=pushed
+# fetch version: -> https://api.github.com/repos/etcd-io/etcd/tags?per_page=300&sort=pushed
 # github api has rate limt
 # prefer use local version file
 def update_all_version_from_github_api():
