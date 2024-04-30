@@ -230,6 +230,16 @@
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3YzLjUuMC1hbHBoYS4w"
     },
     {
+        "name": "v3.4.32",
+        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/v3.4.32",
+        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/v3.4.32",
+        "commit": {
+            "sha": "9ac4e7ef0643590d11dcd1045ddfe1470529f8af",
+            "url": "https://api.github.com/repos/etcd-io/etcd/commits/9ac4e7ef0643590d11dcd1045ddfe1470529f8af"
+        },
+        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3YzLjQuMzI="
+    },
+    {
         "name": "v3.4.31",
         "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/v3.4.31",
         "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/v3.4.31",
@@ -988,15 +998,5 @@
             "url": "https://api.github.com/repos/etcd-io/etcd/commits/b7644ae5f090d123116f8fe651f83d6fdea8be23"
         },
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3YzLjIuMzA="
-    },
-    {
-        "name": "v3.2.29",
-        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/v3.2.29",
-        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/v3.2.29",
-        "commit": {
-            "sha": "b69c0023c969ecc1e4bfcfe23b5116b9a49303c9",
-            "url": "https://api.github.com/repos/etcd-io/etcd/commits/b69c0023c969ecc1e4bfcfe23b5116b9a49303c9"
-        },
-        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3YzLjIuMjk="
     }
 ]
