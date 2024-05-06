@@ -1,6 +1,14 @@
+<div align="center">
+
+![logo](./assets/vfox-etcd-logo.png)
+
+[![E2E tests](https://github.com/version-fox/vfox-etcd/actions/workflows/e2e_test.yaml/badge.svg)](https://github.com/version-fox/vfox-etcd/actions/workflows/e2e_test.yaml)
+
+</div>
+
 # vfox-etcd plugin
 
-etcd [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multiple etcd versions in Linux/Darwin/Windows.
+etcd [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multiple [etcd](https://etcd.io/) versions in Linux/Darwin MacOS/Windows.
 
 ## Usage
 
