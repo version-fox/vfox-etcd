@@ -1,24 +1,33 @@
 import json
 import requests
+from packaging.version import parse, InvalidVersion
 
 # fetch version: -> https://api.github.com/repos/etcd-io/etcd/tags?per_page=300&sort=pushed
 # github api has rate limt
 # prefer use local version file
 def update_all_version_from_github_api():
-    url = "https://api.github.com/repos/etcd-io/etcd/tags?per_page=500&sort=pushed"
-    response = requests.get(url)
-    data = response.json()
-    print(data)
-    if response.status_code != 200:
-        print("Failed to fetch data from github api")
-        return
+    all_version = []
+    for page in range(1,10):
+        url = f"https://api.github.com/repos/etcd-io/etcd/tags?per_page=100&sort=pushed&page={page}"
+        response = requests.get(url)
+        if response.status_code != 200:
+            print("Failed to fetch data from github api")
+            return
+        data = response.json()
+        all_version = all_version + data
 
-    with open("etcd_versions_from_gtihub_api.json", 'w', encoding="utf-8") as file:
-        json.dump(data, file, indent=4)
+    with open("etcd_versions_from_github_api.json", 'w', encoding="utf-8") as file:
+        json.dump(all_version, file, indent=4)
+
+def safe_version_parse(v):
+    try:
+        return parse(v)
+    except InvalidVersion:
+        return None
 
 def get_all_version():
     version_set = set()
-    with open("etcd_versions_from_gtihub_api.json", 'r', encoding="utf-8") as file:
+    with open("etcd_versions_from_github_api.json", 'r', encoding="utf-8") as file:
         data = json.load(file)
         for item in data:
             if "refs/tags/v" not in item["tarball_url"]:
@@ -29,7 +38,9 @@ def get_all_version():
 
 if __name__ == "__main__":
     update_all_version_from_github_api()
-    version_set = get_all_version()
+    versions = list(get_all_version())
+    versions = sorted((v for v in versions if safe_version_parse(v) is not None), key=safe_version_parse, reverse=True)
+    print(versions)
     with open("versions.txt", 'w') as file:
-        for version in version_set:
-            file.write(version + '\n')
+        for v in versions:
+            file.write(v + '\n')
