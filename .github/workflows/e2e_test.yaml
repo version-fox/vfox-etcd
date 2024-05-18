@@ -94,4 +94,35 @@ jobs:
           etcd -version
           export GOFAIL_HTTP="127.0.0.1:22381"
           nohup etcd > etcd.log 2>&1 &
-          curl http://127.0.0.1:22381
+          output=$(curl http://127.0.0.1:22381 | grep afterCommit)
+          if [ -n "$output" ]; then
+            echo "etcd with failpoint"
+            echo $output
+          else
+            echo "etcd does not with failpoint"
+            echo $output
+            exit 1
+          fi
+
+      - name: install etcd with failpoint by vfox-etcd plugin (MacOS)
+        if: runner.os == 'MacOS'
+        run: |
+          export BUILD_WITH_FAILPOINT=yes
+          vfox install etcd@3.4.32
+          vfox use -g etcd@3.4.32
+          eval "$(vfox activate bash)"
+          echo "===============PATH==============="
+          echo $PATH
+          echo "===============PATH==============="
+          etcd -version
+          export GOFAIL_HTTP="127.0.0.1:22381"
+          nohup etcd > etcd.log 2>&1 &
+          output=$(curl http://127.0.0.1:22381 | grep afterCommit)
+          if [ -n "$output" ]; then
+            echo "etcd with failpoint"
+            echo $output
+          else
+            echo "etcd does not with failpoint"
+            echo $output
+            exit 1
+          fi

@@ -28,6 +28,7 @@ vfox install etcd@3.5.5
 # install etcd with failpoint
 BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.5
 
+vfox use etcd@3.5.5
 # start etcd with failpoint
 GOFAIL_HTTP="127.0.0.1:22381" etcd
 
