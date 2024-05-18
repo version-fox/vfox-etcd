@@ -3,6 +3,7 @@ name: E2E tests
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -38,8 +39,14 @@ jobs:
           scoop install vfox
 
       - name: add vfox-etcd plugin
+        if: runner.os == 'Windows'
         run: |
-          vfox add --source https://github.com/version-fox/vfox-etcd/archive/refs/heads/main.zip etcd
+          vfox add --source https://github.com/version-fox/vfox-etcd/archive/$env:GITHUB_REF.zip etcd
+
+      - name: add vfox-etcd plugin
+        if: runner.os != 'Windows'
+        run: |
+          vfox add --source https://github.com/version-fox/vfox-etcd/archive/${GITHUB_REF}.zip etcd
 
       - name: install etcd by vfox-etcd plugin (Linux)
         if: runner.os == 'Linux'
@@ -73,3 +80,18 @@ jobs:
           echo $env:PATH
           echo "===============PATH==============="
           etcd -version
+
+      - name: install etcd with failpoint by vfox-etcd plugin (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          vfox install etcd@3.5.12
+          vfox use -g etcd@3.5.12
+          eval "$(vfox activate bash)"
+          echo "===============PATH==============="
+          echo $PATH
+          echo "===============PATH==============="
+          etcd -version
+          export BUILD_WITH_FAILPOINT=yes
+          export GOFAIL_HTTP="127.0.0.1:22381"
+          nohup etcd &>/dev/null &
+          curl http://127.0.0.1:22381
