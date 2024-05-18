@@ -107,6 +107,7 @@ jobs:
       - name: install etcd with failpoint by vfox-etcd plugin (MacOS)
         if: runner.os == 'MacOS'
         run: |
+          brew install go
           export BUILD_WITH_FAILPOINT=yes
           vfox install etcd@3.4.32
           vfox use -g etcd@3.4.32
