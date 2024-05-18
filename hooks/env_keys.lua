@@ -5,7 +5,7 @@
 --- @field ctx.path string SDK installation directory
 function PLUGIN:EnvKeys(ctx)
     --- this variable is same as ctx.sdkInfo['plugin-name'].path
-    local mainPath = ctx.path
+    local mainPath = ctx.path .. ":" .. ctx.path .. "/bin"
     return {
         {
             key = "PATH",
