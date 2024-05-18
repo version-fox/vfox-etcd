@@ -84,8 +84,8 @@ jobs:
       - name: install etcd with failpoint by vfox-etcd plugin (Linux)
         if: runner.os == 'Linux'
         run: |
-          vfox install etcd@3.5.12
-          vfox use -g etcd@3.5.12
+          vfox install etcd@3.4.32
+          vfox use -g etcd@3.4.32
           eval "$(vfox activate bash)"
           echo "===============PATH==============="
           echo $PATH
