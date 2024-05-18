@@ -9,7 +9,7 @@ function PLUGIN:PostInstall(ctx)
     print("etcd installed path: " .. path)
 
     BUILD_WITH_FAILPOINT = os.getenv("BUILD_WITH_FAILPOINT") or "false"
-    if BUILD_WITH_FAILPOINT == "true" and RUNTIME.osType ~= "windows" then
+    if BUILD_WITH_FAILPOINT == "yes" and RUNTIME.osType ~= "windows" then
         -- Build etcd with failpoints:
         local install_cmd = "cd " .. path .. " && git clone https://github.com/etcd-io/etcd.git . && make gofail-enable && make build"
         local status = os.execute(install_cmd)

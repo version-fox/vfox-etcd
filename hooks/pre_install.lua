@@ -6,12 +6,12 @@ local etcdUtils = require("etcd_utils")
 --- @field ctx.version string User-input version
 --- @return table Version information
 function PLUGIN:PreInstall(ctx)
-    local etcd_version = ctx.version    
+    local etcd_version = ctx.version
     local file, download_url
 
     -- Build etcd with failpoints: https://github.com/etcd-io/etcd/tree/main/tests/robustness#running-locally
     BUILD_WITH_FAILPOINT = os.getenv("BUILD_WITH_FAILPOINT") or "false"
-    if BUILD_WITH_FAILPOINT == "true" and RUNTIME.osType ~= "windows" then
+    if BUILD_WITH_FAILPOINT == "yes" and RUNTIME.osType ~= "windows" then
         download_url = "https://github.com/etcd-io/etcd/archive/refs/tags/v" .. etcd_version .. ".zip"
         print("etcd download url: " .. download_url)
         return {

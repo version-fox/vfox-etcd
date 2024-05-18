@@ -84,7 +84,7 @@ jobs:
       - name: install etcd with failpoint by vfox-etcd plugin (Linux)
         if: runner.os == 'Linux'
         run: |
-          export BUILD_WITH_FAILPOINT=yes
+          export BUILD_WITH_FAILPOINT=true
           vfox install etcd@3.4.32
           vfox use -g etcd@3.4.32
           eval "$(vfox activate bash)"
