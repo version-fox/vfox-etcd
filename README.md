@@ -21,3 +21,16 @@ vofx search etcd
 # or specific version 
 vfox install etcd@3.5.5
 ```
+
+### etcd with failpoint
+
+```shell
+# install etcd with failpoint
+BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.5
+
+# start etcd with failpoint
+GOFAIL_HTTP="127.0.0.1:22381" etcd
+
+# get all failpoint
+curl http://127.0.0.1:22381
+```
