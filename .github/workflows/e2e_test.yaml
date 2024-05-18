@@ -84,6 +84,7 @@ jobs:
       - name: install etcd with failpoint by vfox-etcd plugin (Linux)
         if: runner.os == 'Linux'
         run: |
+          export BUILD_WITH_FAILPOINT=yes
           vfox install etcd@3.4.32
           vfox use -g etcd@3.4.32
           eval "$(vfox activate bash)"
@@ -91,7 +92,6 @@ jobs:
           echo $PATH
           echo "===============PATH==============="
           etcd -version
-          export BUILD_WITH_FAILPOINT=yes
           export GOFAIL_HTTP="127.0.0.1:22381"
           nohup etcd &>/dev/null &
           curl http://127.0.0.1:22381
