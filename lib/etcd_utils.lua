@@ -27,4 +27,10 @@ function etcd_utils.get_sha256sums(etcd_version, file_name)
     end
 end
 
+function etcd_utils.is_dir(path)
+    local status = os.execute("[ -d " .. path .. " ]")
+    return status == 0
+end
+
+
 return etcd_utils
