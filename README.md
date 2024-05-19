@@ -24,7 +24,7 @@ vfox install etcd@3.5.5
 
 ### etcd with failpoint (Only support in Unix-like OS system)
 
-For the chaos testing proposal, you can also utilize vfox-etcd to build etcd with failpoint. Example:
+For the [chaos testing](https://testsigma.com/blog/chaos-testing/) proposal, you can also utilize vfox-etcd to build etcd with failpoint. Example:
 
 **Requirements:**
 
