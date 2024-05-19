@@ -22,9 +22,14 @@ vofx search etcd
 vfox install etcd@3.5.5
 ```
 
-### etcd with failpoint
+### etcd with failpoint (Only support in Unix-like OS system)
 
 For the chaos testing proposal, you can also utilize vfox-etcd to build etcd with failpoint. Example:
+
+**Requirements:**
+
+- [Go 1.21+](https://go.dev/)
+- [GNU Make](https://www.gnu.org/software/make/)
 
 ```shell
 # install etcd with failpoint
