@@ -116,6 +116,8 @@ jobs:
           echo $PATH
           echo "===============PATH==============="
           etcd -version
+          vfox cd etcd
+          make test-robustness
           export GOFAIL_HTTP="127.0.0.1:22381"
           nohup etcd > etcd.log 2>&1 &
           output=$(curl http://127.0.0.1:22381 | grep afterCommit)
