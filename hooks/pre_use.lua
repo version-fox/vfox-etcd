@@ -13,7 +13,6 @@ function PLUGIN:PreUse(ctx)
     local path = sdkInfo.path
     local name = sdkInfo.name
     local used_version = sdkInfo.version
-
     --- working directory
     local cwd = ctx.cwd
 

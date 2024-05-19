@@ -5,13 +5,13 @@ PLUGIN = {}
 --- Plugin name
 PLUGIN.name = "etcd"
 --- Plugin version
-PLUGIN.version = "0.1.0"
+PLUGIN.version = "0.2.0"
 --- Plugin homepage
 PLUGIN.homepage = "https://github.com/version-fox/vfox-etcd"
 --- Plugin license, please choose a correct license according to your needs.
 PLUGIN.license = "Apache 2.0"
 --- Plugin description
-PLUGIN.description = "etcd vfox plugin, support for managing multiple etcd versions."
+PLUGIN.description = "etcd vfox plugin, support for managing multiple etcd & etcdctl & etcductl versions."
 
 
 --- !!! OPTIONAL !!!
