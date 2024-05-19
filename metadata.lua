@@ -11,7 +11,7 @@ PLUGIN.homepage = "https://github.com/version-fox/vfox-etcd"
 --- Plugin license, please choose a correct license according to your needs.
 PLUGIN.license = "Apache 2.0"
 --- Plugin description
-PLUGIN.description = "etcd vfox plugin, support for managing multiple etcd & etcdctl & etcductl versions."
+PLUGIN.description = "etcd vfox plugin. Use the vfox to manage multiple etcd server & etcdctl & etcductl versions in Linux/Darwin/Windows. Also can be used to install an etcd with failpoint."
 
 
 --- !!! OPTIONAL !!!
