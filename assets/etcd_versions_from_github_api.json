@@ -10,6 +10,16 @@
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3YzLjYuMC1hbHBoYS4w"
     },
     {
+        "name": "v3.5.16",
+        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/v3.5.16",
+        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/v3.5.16",
+        "commit": {
+            "sha": "f20bbadd404b57c776d1e8876cefd1ac29b03fb5",
+            "url": "https://api.github.com/repos/etcd-io/etcd/commits/f20bbadd404b57c776d1e8876cefd1ac29b03fb5"
+        },
+        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3YzLjUuMTY="
+    },
+    {
         "name": "v3.5.15",
         "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/v3.5.15",
         "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/v3.5.15",
@@ -248,6 +258,16 @@
             "url": "https://api.github.com/repos/etcd-io/etcd/commits/60d5159091ab06e80ad446ce9e4f415e5f53439e"
         },
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3YzLjUuMC1hbHBoYS4w"
+    },
+    {
+        "name": "v3.4.34",
+        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/v3.4.34",
+        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/v3.4.34",
+        "commit": {
+            "sha": "c123b3ea3db33636011c304d3bfb337d3ded84cf",
+            "url": "https://api.github.com/repos/etcd-io/etcd/commits/c123b3ea3db33636011c304d3bfb337d3ded84cf"
+        },
+        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3YzLjQuMzQ="
     },
     {
         "name": "v3.4.33",
@@ -2510,6 +2530,16 @@
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3Rlc3RzL3YzLjYuMC1hbHBoYS4w"
     },
     {
+        "name": "tests/v3.5.16",
+        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/tests/v3.5.16",
+        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/tests/v3.5.16",
+        "commit": {
+            "sha": "f20bbadd404b57c776d1e8876cefd1ac29b03fb5",
+            "url": "https://api.github.com/repos/etcd-io/etcd/commits/f20bbadd404b57c776d1e8876cefd1ac29b03fb5"
+        },
+        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3Rlc3RzL3YzLjUuMTY="
+    },
+    {
         "name": "tests/v3.5.15",
         "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/tests/v3.5.15",
         "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/tests/v3.5.15",
@@ -2738,6 +2768,16 @@
             "url": "https://api.github.com/repos/etcd-io/etcd/commits/fb559105006337157635673f216c2f1392050f83"
         },
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3NlcnZlci92My42LjAtYWxwaGEuMA=="
+    },
+    {
+        "name": "server/v3.5.16",
+        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/server/v3.5.16",
+        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/server/v3.5.16",
+        "commit": {
+            "sha": "f20bbadd404b57c776d1e8876cefd1ac29b03fb5",
+            "url": "https://api.github.com/repos/etcd-io/etcd/commits/f20bbadd404b57c776d1e8876cefd1ac29b03fb5"
+        },
+        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3NlcnZlci92My41LjE2"
     },
     {
         "name": "server/v3.5.15",
@@ -2970,6 +3010,16 @@
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3JhZnQvdjMuNi4wLWFscGhhLjA="
     },
     {
+        "name": "raft/v3.5.16",
+        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/raft/v3.5.16",
+        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/raft/v3.5.16",
+        "commit": {
+            "sha": "f20bbadd404b57c776d1e8876cefd1ac29b03fb5",
+            "url": "https://api.github.com/repos/etcd-io/etcd/commits/f20bbadd404b57c776d1e8876cefd1ac29b03fb5"
+        },
+        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3JhZnQvdjMuNS4xNg=="
+    },
+    {
         "name": "raft/v3.5.15",
         "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/raft/v3.5.15",
         "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/raft/v3.5.15",
@@ -3198,6 +3248,16 @@
             "url": "https://api.github.com/repos/etcd-io/etcd/commits/fb559105006337157635673f216c2f1392050f83"
         },
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3BrZy92My42LjAtYWxwaGEuMA=="
+    },
+    {
+        "name": "pkg/v3.5.16",
+        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/pkg/v3.5.16",
+        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/pkg/v3.5.16",
+        "commit": {
+            "sha": "f20bbadd404b57c776d1e8876cefd1ac29b03fb5",
+            "url": "https://api.github.com/repos/etcd-io/etcd/commits/f20bbadd404b57c776d1e8876cefd1ac29b03fb5"
+        },
+        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL3BrZy92My41LjE2"
     },
     {
         "name": "pkg/v3.5.15",
@@ -3430,6 +3490,16 @@
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL2V0Y2R1dGwvdjMuNi4wLWFscGhhLjA="
     },
     {
+        "name": "etcdutl/v3.5.16",
+        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/etcdutl/v3.5.16",
+        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/etcdutl/v3.5.16",
+        "commit": {
+            "sha": "f20bbadd404b57c776d1e8876cefd1ac29b03fb5",
+            "url": "https://api.github.com/repos/etcd-io/etcd/commits/f20bbadd404b57c776d1e8876cefd1ac29b03fb5"
+        },
+        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL2V0Y2R1dGwvdjMuNS4xNg=="
+    },
+    {
         "name": "etcdutl/v3.5.15",
         "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/etcdutl/v3.5.15",
         "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/etcdutl/v3.5.15",
@@ -3648,6 +3718,16 @@
             "url": "https://api.github.com/repos/etcd-io/etcd/commits/fb559105006337157635673f216c2f1392050f83"
         },
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL2V0Y2RjdGwvdjMuNi4wLWFscGhhLjA="
+    },
+    {
+        "name": "etcdctl/v3.5.16",
+        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/etcdctl/v3.5.16",
+        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/etcdctl/v3.5.16",
+        "commit": {
+            "sha": "f20bbadd404b57c776d1e8876cefd1ac29b03fb5",
+            "url": "https://api.github.com/repos/etcd-io/etcd/commits/f20bbadd404b57c776d1e8876cefd1ac29b03fb5"
+        },
+        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL2V0Y2RjdGwvdjMuNS4xNg=="
     },
     {
         "name": "etcdctl/v3.5.15",
@@ -3880,6 +3960,16 @@
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL2NsaWVudC92My42LjAtYWxwaGEuMA=="
     },
     {
+        "name": "client/v3.5.16",
+        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/client/v3.5.16",
+        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/client/v3.5.16",
+        "commit": {
+            "sha": "f20bbadd404b57c776d1e8876cefd1ac29b03fb5",
+            "url": "https://api.github.com/repos/etcd-io/etcd/commits/f20bbadd404b57c776d1e8876cefd1ac29b03fb5"
+        },
+        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL2NsaWVudC92My41LjE2"
+    },
+    {
         "name": "client/v3.5.15",
         "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/client/v3.5.15",
         "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/client/v3.5.15",
@@ -4108,6 +4198,16 @@
             "url": "https://api.github.com/repos/etcd-io/etcd/commits/fb559105006337157635673f216c2f1392050f83"
         },
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL2NsaWVudC92Mi4zMDYuMC1hbHBoYS4w"
+    },
+    {
+        "name": "client/v2.305.16",
+        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/client/v2.305.16",
+        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/client/v2.305.16",
+        "commit": {
+            "sha": "f20bbadd404b57c776d1e8876cefd1ac29b03fb5",
+            "url": "https://api.github.com/repos/etcd-io/etcd/commits/f20bbadd404b57c776d1e8876cefd1ac29b03fb5"
+        },
+        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL2NsaWVudC92Mi4zMDUuMTY="
     },
     {
         "name": "client/v2.305.15",
@@ -4340,6 +4440,16 @@
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL2NsaWVudC9wa2cvdjMuNi4wLWFscGhhLjA="
     },
     {
+        "name": "client/pkg/v3.5.16",
+        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/client/pkg/v3.5.16",
+        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/client/pkg/v3.5.16",
+        "commit": {
+            "sha": "f20bbadd404b57c776d1e8876cefd1ac29b03fb5",
+            "url": "https://api.github.com/repos/etcd-io/etcd/commits/f20bbadd404b57c776d1e8876cefd1ac29b03fb5"
+        },
+        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL2NsaWVudC9wa2cvdjMuNS4xNg=="
+    },
+    {
         "name": "client/pkg/v3.5.15",
         "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/client/pkg/v3.5.15",
         "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/client/pkg/v3.5.15",
@@ -4558,6 +4668,16 @@
             "url": "https://api.github.com/repos/etcd-io/etcd/commits/fb559105006337157635673f216c2f1392050f83"
         },
         "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL2FwaS92My42LjAtYWxwaGEuMA=="
+    },
+    {
+        "name": "api/v3.5.16",
+        "zipball_url": "https://api.github.com/repos/etcd-io/etcd/zipball/refs/tags/api/v3.5.16",
+        "tarball_url": "https://api.github.com/repos/etcd-io/etcd/tarball/refs/tags/api/v3.5.16",
+        "commit": {
+            "sha": "f20bbadd404b57c776d1e8876cefd1ac29b03fb5",
+            "url": "https://api.github.com/repos/etcd-io/etcd/commits/f20bbadd404b57c776d1e8876cefd1ac29b03fb5"
+        },
+        "node_id": "MDM6UmVmMTEyMjUwMTQ6cmVmcy90YWdzL2FwaS92My41LjE2"
     },
     {
         "name": "api/v3.5.15",
