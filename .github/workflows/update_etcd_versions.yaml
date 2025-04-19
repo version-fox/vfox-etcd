@@ -2,7 +2,7 @@ name: update_etcd_versions
 
 on:
   schedule:
-    - cron: "0 16 * * 2"
+    - cron: "0 3 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   update_etcd_versions:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
