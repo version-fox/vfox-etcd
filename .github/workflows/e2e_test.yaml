@@ -52,6 +52,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           vfox install etcd@3.5.12
+          eval "$(vfox activate bash)"
           vfox use -g etcd@3.5.12
           eval "$(vfox activate bash)"
           echo "===============PATH==============="
@@ -63,6 +64,7 @@ jobs:
         if: runner.os == 'MacOS'
         run: |
           vfox install etcd@3.5.12
+          eval "$(vfox activate bash)"
           vfox use -g etcd@3.5.12
           eval "$(vfox activate bash)"
           echo "===============PATH==============="
@@ -74,6 +76,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           vfox install etcd@3.5.12
+          eval "$(vfox activate bash)"
           vfox use -g etcd@3.5.12
           Invoke-Expression "$(vfox activate pwsh)"
           echo "===============PATH==============="
@@ -86,6 +89,7 @@ jobs:
         run: |
           export BUILD_WITH_FAILPOINT=yes
           vfox install etcd@3.4.32
+          eval "$(vfox activate bash)"
           vfox use -g etcd@3.4.32
           eval "$(vfox activate bash)"
           echo "===============PATH==============="
@@ -112,6 +116,7 @@ jobs:
           brew install go
           export BUILD_WITH_FAILPOINT=yes
           vfox install etcd@3.4.32
+          eval "$(vfox activate bash)"
           vfox use -g etcd@3.4.32
           eval "$(vfox activate bash)"
           echo "===============PATH==============="
