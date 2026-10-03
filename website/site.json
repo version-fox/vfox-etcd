@@ -16,7 +16,7 @@
   "extra_code": "vfox exec etcd@3.5.5 -- etcdctl version\nvfox exec etcd@3.5.5 -- etcdutl version",
   "special_code": "BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.5\nGOFAIL_HTTP=\"127.0.0.1:22381\" vfox exec etcd@3.5.5 -- etcd",
   "special_shell": "Bash",
-  "linux_hint": "Go 1.21+ · GNU Make",
-  "macos_hint": "Go · Make",
+  "linux_hint": "Git · Go (upstream go.mod) · GNU Make",
+  "macos_hint": "Git · Go (upstream go.mod) · GNU Make",
   "terminal_code": "$ vfox install etcd@3.5.5\n$ vfox exec etcd@3.5.5 -- etcd --version"
 }
