@@ -1,0 +1,22 @@
+{
+  "plugin_title": "vfox-etcd",
+  "product": "etcd",
+  "repo_url": "https://github.com/version-fox/vfox-etcd",
+  "official_url": "https://etcd.io/",
+  "official_name": "etcd",
+  "example_version": "3.5.5",
+  "site_url": "https://version-fox.github.io/vfox-etcd",
+  "vfox_add_code": "vfox add --source https://github.com/version-fox/vfox-etcd/archive/refs/heads/main.zip etcd",
+  "vfox_install_code": "vfox install etcd@3.5.5",
+  "vfox_run_code": "vfox exec etcd@3.5.5 -- etcd --version",
+  "mise_prepare_code": "mise ls-remote vfox:version-fox/vfox-etcd",
+  "mise_install_code": "mise use -g vfox:version-fox/vfox-etcd@3.5.5",
+  "mise_run_code": "mise exec -- etcd --version",
+  "project_code": "eval \"$(vfox activate bash)\"\nvfox use -p etcd@3.5.5\nvfox exec etcd -- etcd --version",
+  "extra_code": "vfox exec etcd@3.5.5 -- etcdctl version\nvfox exec etcd@3.5.5 -- etcdutl version",
+  "special_code": "BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.5\nGOFAIL_HTTP=\"127.0.0.1:22381\" vfox exec etcd@3.5.5 -- etcd",
+  "special_shell": "Bash",
+  "linux_hint": "Git · Go (upstream go.mod) · GNU Make",
+  "macos_hint": "Git · Go (upstream go.mod) · GNU Make",
+  "terminal_code": "$ vfox install etcd@3.5.5\n$ vfox exec etcd@3.5.5 -- etcd --version"
+}

@@ -1,2 +1,4 @@
 .idea
 .tool-versions
+_site/
+__pycache__/

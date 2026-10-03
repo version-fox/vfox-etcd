@@ -1,0 +1,3 @@
+Official project logo, copied without modification.
+Source: https://raw.githubusercontent.com/cncf/artwork/main/projects/etcd/icon/color/etcd-icon-color.svg
+Used to identify the runtime managed by this plugin, not to imply endorsement.
