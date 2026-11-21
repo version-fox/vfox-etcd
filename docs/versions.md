@@ -6,7 +6,7 @@ The plugin installs etcd releases from GitHub. A version is the release number, 
 
 ## Search
 
-`vfox search etcd` lists the versions the plugin knows. The list is kept in `assets/versions.txt` on the default branch, and a workflow refreshes it every week from the etcd tags, so a release appears a few days after it is tagged, at most.
+`vfox search etcd` lists the versions the plugin can install. The list is kept in `assets/versions.txt` on the default branch, and a workflow refreshes it every week from the etcd tags. A release is listed only when its `SHA256SUMS` lists the linux-amd64 archive, because the plugin does not install an archive without a checksum. So `latest` is the newest release that installs on Linux amd64. Another platform may lack the archive of a listed version, see [platforms.md](platforms.md).
 
 ## Install
 

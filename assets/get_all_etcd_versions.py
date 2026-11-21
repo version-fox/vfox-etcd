@@ -15,9 +15,12 @@
 """Refreshes versions.txt from the etcd release tags.
 
 Run it from the assets directory, as the update_etcd_versions workflow does. The
-tags are saved beside it in etcd_versions_from_github_api.json. When GitHub
-cannot be reached, the script exits with an error and leaves versions.txt alone,
-so the workflow shows the failure instead of quietly keeping an old list.
+tags are saved beside it in etcd_versions_from_github_api.json. A version is kept
+only when the plugin can install it, which needs the release's SHA256SUMS to list
+the linux-amd64 archive: the plugin does not install an archive without a checksum.
+When GitHub cannot be reached, the script exits with an error and leaves
+versions.txt alone, so the workflow shows the failure instead of quietly keeping
+an old list.
 """
 
 import json
@@ -34,6 +37,8 @@ PAGES = 9
 PER_PAGE = 100
 TIMEOUT_SECONDS = 30
 RELEASE_PREFIX = "refs/tags/v"
+CHECKSUMS_URL = "https://github.com/etcd-io/etcd/releases/download/v{version}/SHA256SUMS"
+ARCHIVE_NAME = "etcd-v{version}-linux-amd64.tar.gz"
 
 
 def fetch_tags():
@@ -81,14 +86,34 @@ def release_versions(tags):
     return sorted((v for v in versions if is_release(v)), key=Version, reverse=True)
 
 
+def is_installable(version):
+    """Reports whether the plugin can install version: its SHA256SUMS must list the linux-amd64 archive.
+
+    A release without a SHA256SUMS answers 404 and is left out. Any other failure stops the script,
+    so that a request which failed cannot shrink the list.
+    """
+    url = CHECKSUMS_URL.format(version=version)
+    response = requests.get(url, timeout=TIMEOUT_SECONDS)
+    if response.status_code == 404:
+        return False
+    if response.status_code != 200:
+        raise SystemExit(f"GitHub returned HTTP {response.status_code} for {url}; versions.txt is unchanged")
+    archive = ARCHIVE_NAME.format(version=version)
+    for line in response.text.splitlines():
+        fields = line.split()
+        if len(fields) == 2 and fields[1].lstrip("*") == archive:
+            return True
+    return False
+
+
 def main():
     tags = fetch_tags()
     with open(TAGS_FILE, "w", encoding="utf-8") as file:
         json.dump(tags, file, indent=4)
 
-    versions = release_versions(tags)
+    versions = [version for version in release_versions(tags) if is_installable(version)]
     if not versions:
-        raise SystemExit("no etcd release tags were found; versions.txt is unchanged")
+        raise SystemExit("no installable etcd release was found; versions.txt is unchanged")
     with open(VERSIONS_FILE, "w", encoding="utf-8", newline="\n") as file:
         for version in versions:
             file.write(version + "\n")

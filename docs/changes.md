@@ -13,6 +13,7 @@ What changed in each release, as a user notices it. GitHub's release pages list 
 - A version that is not a release, such as `3.5` or `3.5.12; rm`, is refused before anything is downloaded.
 - `vfox use` of a version that is not installed says how to install it, instead of failing with a Lua error.
 - A failed download of the version list or of `SHA256SUMS` stops with the URL and the HTTP status. Before, the install went on without a checksum, and a failed version list was a Lua error.
+- `vfox search etcd` lists only the versions the plugin can install. A release is listed when its `SHA256SUMS` lists the linux-amd64 archive. Releases without that file, which the plugin now refuses to install, are no longer listed, so `latest` picks one that installs. The list went from 310 versions to 134. See [versions.md](versions.md).
 - The plugin description and the docs name `etcdutl`, where they said `etcductl`.
 
 For maintainers:

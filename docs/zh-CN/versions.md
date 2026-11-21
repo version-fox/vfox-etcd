@@ -6,7 +6,7 @@
 
 ## 搜索
 
-`vfox search etcd` 会列出插件已知的版本。该列表保存在默认分支的 `assets/versions.txt` 中，并由一个工作流每周根据 etcd 的 Git 标签刷新一次，因此发布版本最晚会在打上标签后的几天内出现。
+`vfox search etcd` 会列出插件可以安装的版本。该列表保存在默认分支的 `assets/versions.txt` 中，并由一个工作流每周根据 etcd 的 Git 标签刷新一次。只有当某个发布版本的 `SHA256SUMS` 列出了 linux-amd64 发布包时，它才会被列出，因为插件不会在没有校验和的情况下安装发布包。因此 `latest` 指的是 Linux amd64 上可以安装的最新发布版本。其他平台可能缺少已列出版本的发布包，参见 [platforms.md](platforms.md)。
 
 ## 安装
 

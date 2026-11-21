@@ -93,7 +93,7 @@ python3 -m http.server 8080 --directory /tmp/vfox-etcd-site
 
 ## 版本列表
 
-`assets/versions.txt` 由 `update_etcd_versions` 工作流每周一刷新。它通过 GitHub API 读取 etcd 的标签；当无法连接该 API 时，它会失败，且不会修改列表。若要手动刷新，请在 `assets` 目录中运行它，并在 `GITHUB_TOKEN` 中提供令牌：
+`assets/versions.txt` 由 `update_etcd_versions` 工作流每周一刷新。它通过 GitHub API 读取 etcd 的标签，只保留其发布版本的 `SHA256SUMS` 中列出了 linux-amd64 发布包的版本。当无法连接 GitHub，或 GitHub 返回的错误不是 404（404 表示该发布版本没有 `SHA256SUMS`）时，它会失败，且不会修改列表。若要手动刷新，请在 `assets` 目录中运行它，并在 `GITHUB_TOKEN` 中提供令牌：
 
 ```bash
 cd assets && python3 -m pip install requests packaging && python3 get_all_etcd_versions.py

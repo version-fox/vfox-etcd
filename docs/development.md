@@ -93,7 +93,7 @@ The workflow follows the shared `@v1` release-tool version. Updating the tool do
 
 ## Versions list
 
-`assets/versions.txt` is refreshed by the `update_etcd_versions` workflow every Monday. It reads the etcd tags with the GitHub API, and fails, without touching the list, when the API cannot be reached. To refresh it by hand, run it from the `assets` directory with a token in `GITHUB_TOKEN`:
+`assets/versions.txt` is refreshed by the `update_etcd_versions` workflow every Monday. It reads the etcd tags with the GitHub API, and keeps a version only when its release's `SHA256SUMS` lists the linux-amd64 archive. It fails, without touching the list, when GitHub cannot be reached or answers with an error other than 404, which means the release has no `SHA256SUMS`. To refresh it by hand, run it from the `assets` directory with a token in `GITHUB_TOKEN`:
 
 ```bash
 cd assets && python3 -m pip install requests packaging && python3 get_all_etcd_versions.py
