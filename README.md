@@ -2,29 +2,40 @@
 
 ![logo](./assets/vfox-etcd-logo.png)
 
-[![E2E tests](https://github.com/version-fox/vfox-etcd/actions/workflows/e2e_test.yaml/badge.svg)](https://github.com/version-fox/vfox-etcd/actions/workflows/e2e_test.yaml)
+[![Lint](https://github.com/version-fox/vfox-etcd/actions/workflows/lint.yml/badge.svg)](https://github.com/version-fox/vfox-etcd/actions/workflows/lint.yml)
+[![E2E](https://github.com/version-fox/vfox-etcd/actions/workflows/e2e.yml/badge.svg)](https://github.com/version-fox/vfox-etcd/actions/workflows/e2e.yml)
+[![Test](https://github.com/version-fox/vfox-etcd/actions/workflows/test.yml/badge.svg)](https://github.com/version-fox/vfox-etcd/actions/workflows/test.yml)
+[![License](https://github.com/version-fox/vfox-etcd/actions/workflows/license.yml/badge.svg)](https://github.com/version-fox/vfox-etcd/actions/workflows/license.yml)
 
 </div>
 
 # vfox-etcd plugin
 
-etcd [vfox](https://github.com/version-fox) plugin. Use the vfox to manage multiple [etcd](https://etcd.io/) & etcdctl & etcductl versions in Linux/Darwin MacOS/Windows. Also can be used to build etcd with [failpoint](https://github.com/etcd-io/etcd/tree/main/tests/robustness#running-locally).
+[中文](README_CN.md) | [English](README.md)
 
-## Usage
+An [etcd](https://etcd.io/) plugin for [vfox](https://vfox.dev/). It installs several etcd versions side by side and switches between them, with `etcd`, `etcdctl` and `etcdutl` on the `PATH`, on Linux, macOS and Windows. It can also build etcd with [failpoints](docs/failpoint.md) for chaos testing, and adopt an etcd that is already on the machine with [`vfox link --detect etcd`](docs/link.md).
 
-### vfox
+## Install
 
-```shell
-# install plugin
-vfox add --source https://github.com/version-fox/vfox-etcd/archive/refs/heads/main.zip etcd
+After installing [vfox](https://github.com/version-fox/vfox), add the plugin, install a version and select it:
 
-# install an available etcd version
+```bash
+vfox add etcd
 vfox search etcd
-# or specific version 
-vfox install etcd@3.5.5
+vfox install etcd@3.5.12
+vfox use -g etcd@3.5.12
+etcd --version
 ```
 
-### mise
+`vfox add etcd` installs the latest release. To try `main`, a branch, or a change you are working on, see [install-from-source.md](docs/install-from-source.md).
+
+Some sections below describe the plugin on `main`: `vfox link --detect etcd`, and failpoint builds, which now build the version you ask for. The latest release does not have them until the next release, so install from source to use them.
+
+For `etcd` to be on the `PATH`, vfox has to be hooked into your shell, see its [quick start](https://vfox.dev/guides/quick-start.html). `vfox use -g` selects a version for every new shell, and `vfox use` only for the current one.
+
+The versions, and how to pick one, are described in [docs/versions.md](docs/versions.md). Supported platforms are in [docs/platforms.md](docs/platforms.md).
+
+## Use with mise
 
 [vfox](https://github.com/version-fox/vfox) is the recommended plugin system for [mise](https://mise.jdx.dev/). You can use this plugin directly with mise via the `vfox:` prefix.
 
@@ -33,10 +44,10 @@ vfox install etcd@3.5.5
 mise use -g vfox:version-fox/vfox-etcd@latest
 
 # or install a specific version
-mise use -g vfox:version-fox/vfox-etcd@3.5.5
+mise use -g vfox:version-fox/vfox-etcd@3.5.12
 
 # install for local project (creates .mise.toml)
-mise use vfox:version-fox/vfox-etcd@3.5.5
+mise use vfox:version-fox/vfox-etcd@3.5.12
 ```
 
 This sets the version in `~/.config/mise/config.toml`:
@@ -46,7 +57,7 @@ This sets the version in `~/.config/mise/config.toml`:
 "vfox:version-fox/vfox-etcd" = "latest"
 ```
 
-#### Simplify with alias
+### Simplify with alias
 
 Add an alias to your `~/.config/mise/config.toml` to use `etcd` as the short name:
 
@@ -59,29 +70,53 @@ After that, you can use the simplified syntax:
 
 ```shell
 mise use -g etcd@latest
-mise install etcd@3.5.5
+mise install etcd@3.5.12
 ```
 
-### etcd with failpoint (Only support in Unix-like OS system)
+## Use an etcd that is already installed
 
-For the [chaos testing](https://testsigma.com/blog/chaos-testing/) proposal, you can also utilize vfox-etcd to build etcd with failpoint. Example:
+If etcd is already on the machine, from a package manager, Homebrew, Scoop or a manual install, `vfox link --detect etcd` adopts it instead of downloading another copy. It needs vfox 1.1.0 or later:
 
-**Requirements:**
+```bash
+vfox link --detect etcd
+```
 
-- [Go 1.21+](https://go.dev/)
-- [GNU Make](https://www.gnu.org/software/make/)
+The linked version is named after the installation, such as `3.5.12-system` or `3.5.12-brew`, and `vfox use` selects it like any other version. See [docs/link.md](docs/link.md) for where the plugin looks, how the names are built and how to link a directory by hand.
+
+## etcd with failpoints
+
+For the [chaos testing](https://testsigma.com/blog/chaos-testing/) proposal, the plugin can build etcd from source with failpoints. It works on Linux and macOS only, and needs Git, Go and GNU Make:
 
 ```shell
 # install etcd with failpoint
-BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.5
+BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
 
-vfox use etcd@3.5.5
+vfox use -g etcd@3.5.12
 # start etcd with failpoint
 GOFAIL_HTTP="127.0.0.1:22381" etcd
 
 # get all failpoint
 curl http://127.0.0.1:22381
 ```
+
+See [docs/failpoint.md](docs/failpoint.md) for what the build does and what it needs.
+
+## Documentation
+
+- [Versions](docs/versions.md): searching, installing, selecting and removing versions
+- [Platforms](docs/platforms.md): which operating systems and CPUs have builds
+- [Failpoints](docs/failpoint.md): building etcd with `BUILD_WITH_FAILPOINT=yes`
+- [Installed etcd](docs/link.md): adopting an etcd on the machine with `vfox link --detect etcd`
+- [Troubleshooting](docs/troubleshooting.md): the messages the plugin prints and what to do about them
+- [Changes](docs/changes.md): what each release changed
+- [Development](docs/development.md): how the plugin is built, checked and released
+- [E2E tests](docs/e2e.md): the suites that install the plugin on Linux, macOS and Windows
+
+## Documentation website
+
+[中文](https://version-fox.github.io/vfox-etcd/) · [English](https://version-fox.github.io/vfox-etcd/en/)
+
+The bilingual site is maintained under `website/`. See [website/README.md](website/README.md) for local build and deployment instructions.
 
 ## Releasing this plugin
 
@@ -98,8 +133,10 @@ The workflow follows the shared `@v1` release-tool version. Updating the tool do
 not release this plugin. See the [shared workflow documentation](https://github.com/version-fox/plugin-manifest-action)
 for the package contract and first-rollout requirements.
 
-## Documentation website
+## Contributing
 
-[中文](https://version-fox.github.io/vfox-etcd/) · [English](https://version-fox.github.io/vfox-etcd/en/)
+Read [docs/development.md](docs/development.md) before you open a pull request. It lists the checks CI runs, and what to update in `docs/changes.md`, `README.md` and `README_CN.md`.
 
-The bilingual site is maintained under `website/`. See [website/README.md](website/README.md) for local build and deployment instructions.
+## License
+
+Apache License 2.0, see [LICENSE](LICENSE).

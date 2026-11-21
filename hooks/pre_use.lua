@@ -1,3 +1,16 @@
+-- Copyright 2026 version-fox and contributors
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--   http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
 
 --- When user invoke `use` command, this function will be called to get the
 --- valid version information.
@@ -5,23 +18,20 @@
 function PLUGIN:PreUse(ctx)
     --- user input version
     local input_version = ctx.version
-    --- user current used version
-    local previousVersion = ctx.previousVersion
-
-    --- installed sdks
+    --- installed sdks, keyed by the version the user named
     local sdkInfo = ctx.installedSdks[input_version]
-    local path = sdkInfo.path
-    local name = sdkInfo.name
-    local used_version = sdkInfo.version
-    --- working directory
-    local cwd = ctx.cwd
-
-    --- user input scope
-    --- could be one of global/project/session
-    local scope = ctx.scope
+    if sdkInfo == nil then
+        error(
+            "etcd "
+                .. tostring(input_version)
+                .. " is not installed, run `vfox install etcd@"
+                .. tostring(input_version)
+                .. "` first"
+        )
+    end
 
     --- return the version information
     return {
-        version = used_version
+        version = sdkInfo.version,
     }
 end

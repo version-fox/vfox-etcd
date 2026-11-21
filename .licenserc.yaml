@@ -1,0 +1,50 @@
+# Copyright 2026 version-fox and contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# License header check (Apache SkyWalking Eyes). Lua, YAML, TOML, Go, Python and
+# the ignore files take the header as a comment.
+header:
+  license:
+    spdx-id: Apache-2.0
+    copyright-owner: version-fox and contributors
+    content: |
+      Copyright 2026 version-fox and contributors
+
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+
+  paths-ignore:
+    - '.git'
+    - '**/*.md'
+    - '**/*.json'
+    - '.tool-versions'
+    - 'LICENSE'
+    # go.sum is module checksum data; the Go tool rejects comments in it.
+    - '**/go.sum'
+    # Saved version files that carry no comment syntax of their own.
+    - 'assets/versions.txt'
+    # The official logo and its source note are kept unchanged.
+    - 'website/assets/logo.svg'
+    - 'website/assets/LOGO-SOURCE.txt'
+
+  comment: on-failure

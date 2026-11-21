@@ -1,36 +1,179 @@
+-- Copyright 2026 version-fox and contributors
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--   http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
 local http = require("http")
 
 local etcd_utils = {}
 
-function etcd_utils.get_etcd_release_verions()
-    local resp, err = http.get({
-        url = "https://fastly.jsdelivr.net/gh/version-fox/vfox-etcd@main/assets/versions.txt"
-    })
+--- Release archives and their SHA256SUMS are published on GitHub, one directory per tag.
+etcd_utils.RELEASE_URL = "https://github.com/etcd-io/etcd/releases/download/v"
+--- The source of the failpoint build.
+etcd_utils.REPOSITORY_URL = "https://github.com/etcd-io/etcd.git"
+--- The released versions, one per line. The update_etcd_versions workflow keeps the file current.
+etcd_utils.VERSIONS_URL = "https://fastly.jsdelivr.net/gh/version-fox/vfox-etcd@main/assets/versions.txt"
+
+-- A release number, with an optional pre-release suffix such as 3.8.0-alpha.0. Only
+-- strings of this shape reach a download URL or the shell of the failpoint build.
+local VERSION_PATTERN = "^%d+%.%d+%.%d+[%w%.%-]*$"
+
+--- Reports whether version is a release number the plugin can download or build.
+--- @param version any
+--- @return boolean
+function etcd_utils.is_valid_version(version)
+    return type(version) == "string" and string.match(version, VERSION_PATTERN) ~= nil
+end
+
+--- Removes spaces and line breaks at both ends of value.
+--- @param value string
+--- @return string
+function etcd_utils.trim(value)
+    local result = string.gsub(value, "^%s+", "")
+    result = string.gsub(result, "%s+$", "")
+    return result
+end
+
+--- Downloads url and returns its body. Network failures and HTTP errors stop the hook with the URL in the message.
+--- @param url string
+--- @return string
+local function fetch(url)
+    local resp, err = http.get({ url = url })
+    if err ~= nil then
+        error("could not download " .. url .. ": " .. tostring(err))
+    end
+    if resp == nil or resp.status_code ~= 200 then
+        error("could not download " .. url .. ": HTTP " .. tostring(resp and resp.status_code))
+    end
+    return resp.body
+end
+
+--- Returns the released versions for `vfox search etcd`.
+--- @return table
+function etcd_utils.get_release_versions()
+    local body = fetch(etcd_utils.VERSIONS_URL)
     local result = {}
-    for version in string.gmatch(resp.body, '([^\n]+)') do
-        table.insert(result, {
-            version = version
-        })
+    for line in string.gmatch(body, "[^\n]+") do
+        local version = etcd_utils.trim(line)
+        if etcd_utils.is_valid_version(version) then
+            table.insert(result, { version = version })
+        end
     end
     return result
 end
 
-function etcd_utils.get_sha256sums(etcd_version, file_name)
-    local resp, err = http.get({
-        url = "https://github.com/etcd-io/etcd/releases/download/v" .. etcd_version .. "/SHA256SUMS"
-    })
-    for line in string.gmatch(resp.body, '([^\n]+)') do
-        local checksum, name = string.match(line, '(%w+)%s+(%S+)')
+--- Returns the name of the release archive etcd publishes for a platform, such as
+--- etcd-v3.5.12-linux-amd64.tar.gz or etcd-v3.5.12-windows-amd64.zip.
+--- @param version string
+--- @param os_type string vfox's RUNTIME.osType: linux, darwin or windows
+--- @param arch_type string vfox's RUNTIME.archType: amd64 or arm64
+--- @return string
+function etcd_utils.archive_name(version, os_type, arch_type)
+    local extension = os_type == "linux" and ".tar.gz" or ".zip"
+    return "etcd-v" .. version .. "-" .. string.lower(os_type) .. "-" .. string.lower(arch_type) .. extension
+end
+
+--- Returns the SHA-256 that etcd's SHA256SUMS lists for file_name. A missing entry is an error: vfox
+--- skips the check when no checksum is given, so a silent gap would install an unverified archive.
+--- @param version string
+--- @param file_name string
+--- @return string
+function etcd_utils.get_sha256sums(version, file_name)
+    local url = etcd_utils.RELEASE_URL .. version .. "/SHA256SUMS"
+    local body = fetch(url)
+    for line in string.gmatch(body, "[^\n]+") do
+        local checksum, name = string.match(line, "^(%x+)%s+%*?(%S+)")
         if name == file_name then
             return checksum
         end
     end
+    error("no checksum for " .. file_name .. " in " .. url)
 end
 
-function etcd_utils.is_dir(path)
-    local status = os.execute("[ -d " .. path .. " ]")
-    return status == 0
+--- Reports whether a file can be opened at path. The check is portable, unlike `[ -d ]`, which
+--- does not exist in Windows' cmd and breaks on paths with spaces.
+--- @param path string
+--- @return boolean
+function etcd_utils.file_exists(path)
+    local file = io.open(path, "rb")
+    if file == nil then
+        return false
+    end
+    file:close()
+    return true
 end
 
+--- Returns the version printed by `etcd --version`, or nil when the output has none.
+--- @param output string
+--- @return string|nil
+function etcd_utils.parse_version(output)
+    local version = string.match(output, "etcd Version:%s*(%S+)")
+    if version ~= nil and etcd_utils.is_valid_version(version) then
+        return version
+    end
+    return nil
+end
+
+--- Quotes value for a POSIX shell.
+--- @param value string
+--- @return string
+function etcd_utils.shell_quote(value)
+    return "'" .. string.gsub(value, "'", "'\\''") .. "'"
+end
+
+--- Runs the etcd binary with --version and returns the version it reports, or nil when it does not run.
+--- @param binary string path of the executable
+--- @param os_type string vfox's RUNTIME.osType
+--- @return string|nil
+function etcd_utils.probe_version(binary, os_type)
+    if io.popen == nil then
+        return nil
+    end
+    local quoted = os_type == "windows" and ('"' .. binary .. '"') or etcd_utils.shell_quote(binary)
+    local handle = io.popen(quoted .. " --version 2>&1", "r")
+    if handle == nil then
+        return nil
+    end
+    local output = handle:read("*a") or ""
+    handle:close()
+    return etcd_utils.parse_version(output)
+end
+
+--- Returns the shell command that builds etcd with failpoints in path. The clone is the release tag of
+--- version, so the build matches the version that vfox reports, and not the default branch.
+---
+--- gofail has to be on PATH before the make targets run, because they look for it there. `go install`
+--- puts gofail in GOBIN, or else in the first GOPATH entry, so the command adds that directory to PATH
+--- first. The 3.4 line has a `gofail-enable` target, which enables the failpoints itself. Later lines have
+--- none, so the command installs gofail and lets the build enable the failpoints: the build needs
+--- FAILPOINTS=true for that, or etcd's build script switches them off again.
+--- @param path string the vfox install directory
+--- @param version string
+--- @return string
+function etcd_utils.failpoint_build_command(path, version)
+    if not etcd_utils.is_valid_version(version) then
+        error("invalid etcd version " .. tostring(version))
+    end
+    return "cd "
+        .. etcd_utils.shell_quote(path)
+        .. " && git clone --depth 1 --branch v"
+        .. version
+        .. " "
+        .. etcd_utils.REPOSITORY_URL
+        .. " etcd"
+        .. " && cd etcd"
+        .. ' && export PATH="$(go env GOBIN | grep . || echo "$(go env GOPATH | cut -d: -f1)/bin"):$PATH"'
+        .. " && if grep -q '^gofail-enable:' Makefile; then make gofail-enable; else make install-gofail; fi"
+        .. " && FAILPOINTS=true make build"
+end
 
 return etcd_utils

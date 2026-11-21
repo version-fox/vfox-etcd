@@ -1,46 +1,99 @@
+# Copyright 2026 version-fox and contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Refreshes versions.txt from the etcd release tags.
+
+Run it from the assets directory, as the update_etcd_versions workflow does. The
+tags are saved beside it in etcd_versions_from_github_api.json. When GitHub
+cannot be reached, the script exits with an error and leaves versions.txt alone,
+so the workflow shows the failure instead of quietly keeping an old list.
+"""
+
 import json
+import os
+import sys
+
 import requests
-from packaging.version import parse, InvalidVersion
+from packaging.version import InvalidVersion, Version
 
-# fetch version: -> https://api.github.com/repos/etcd-io/etcd/tags?per_page=300&sort=pushed
-# github api has rate limt
-# prefer use local version file
-def update_all_version_from_github_api():
-    all_version = []
-    for page in range(1,10):
-        url = f"https://api.github.com/repos/etcd-io/etcd/tags?per_page=100&sort=pushed&page={page}"
-        response = requests.get(url)
+TAGS_URL = "https://api.github.com/repos/etcd-io/etcd/tags"
+TAGS_FILE = "etcd_versions_from_github_api.json"
+VERSIONS_FILE = "versions.txt"
+PAGES = 9
+PER_PAGE = 100
+TIMEOUT_SECONDS = 30
+RELEASE_PREFIX = "refs/tags/v"
+
+
+def fetch_tags():
+    """Returns every tag of the etcd repository, as GitHub's API lists them."""
+    headers = {"Accept": "application/vnd.github+json"}
+    # An authenticated request has a much higher rate limit than an anonymous one.
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    tags = []
+    for page in range(1, PAGES + 1):
+        response = requests.get(
+            TAGS_URL,
+            params={"per_page": PER_PAGE, "sort": "pushed", "page": page},
+            headers=headers,
+            timeout=TIMEOUT_SECONDS,
+        )
         if response.status_code != 200:
-            print("Failed to fetch data from github api")
-            return
-        data = response.json()
-        all_version = all_version + data
+            raise SystemExit(f"GitHub API returned HTTP {response.status_code} for page {page} of the etcd tags")
+        page_tags = response.json()
+        if not page_tags:
+            break
+        tags.extend(page_tags)
+    return tags
 
-    with open("etcd_versions_from_github_api.json", 'w', encoding="utf-8") as file:
-        json.dump(all_version, file, indent=4)
 
-def safe_version_parse(v):
+def is_release(version):
+    """Reports whether a tag name is a version packaging can order."""
     try:
-        return parse(v)
+        Version(version)
     except InvalidVersion:
-        return None
+        return False
+    return True
 
-def get_all_version():
-    version_set = set()
-    with open("etcd_versions_from_github_api.json", 'r', encoding="utf-8") as file:
-        data = json.load(file)
-        for item in data:
-            if "refs/tags/v" not in item["tarball_url"]:
-                continue
-            version = item["tarball_url"].split("refs/tags/v")[1]
-            version_set.add(version)
-    return version_set
+
+def release_versions(tags):
+    """Returns the distinct release numbers among the tags, newest first."""
+    versions = set()
+    for item in tags:
+        tarball = item["tarball_url"]
+        if RELEASE_PREFIX not in tarball:
+            continue
+        versions.add(tarball.split(RELEASE_PREFIX, 1)[1])
+    return sorted((v for v in versions if is_release(v)), key=Version, reverse=True)
+
+
+def main():
+    tags = fetch_tags()
+    with open(TAGS_FILE, "w", encoding="utf-8") as file:
+        json.dump(tags, file, indent=4)
+
+    versions = release_versions(tags)
+    if not versions:
+        raise SystemExit("no etcd release tags were found; versions.txt is unchanged")
+    with open(VERSIONS_FILE, "w", encoding="utf-8", newline="\n") as file:
+        for version in versions:
+            file.write(version + "\n")
+    print(f"wrote {len(versions)} etcd versions to {VERSIONS_FILE}, newest {versions[0]}", file=sys.stderr)
+
 
 if __name__ == "__main__":
-    update_all_version_from_github_api()
-    versions = list(get_all_version())
-    versions = sorted((v for v in versions if safe_version_parse(v) is not None), key=safe_version_parse, reverse=True)
-    print(versions)
-    with open("versions.txt", 'w') as file:
-        for v in versions:
-            file.write(v + '\n')
+    main()
