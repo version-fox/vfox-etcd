@@ -103,10 +103,10 @@ function etcd_utils.is_before_checksums(version)
         return { tonumber(major), tonumber(minor), tonumber(patch), rest == "" and 1 or 0 }
     end
     local current = parts(version)
-    if current == nil then
+    local limit = parts(etcd_utils.CHECKSUMS_FROM)
+    if current == nil or limit == nil then
         return false
     end
-    local limit = parts(etcd_utils.CHECKSUMS_FROM)
     for i = 1, 4 do
         if current[i] ~= limit[i] then
             return current[i] < limit[i]
