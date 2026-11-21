@@ -40,6 +40,16 @@ assert(
     executed[1]
 )
 
+-- A path with a space is quoted, so the build still runs in the install directory.
+executed = {}
+plugin:PostInstall({
+    sdkInfo = {
+        etcd = { path = "/home/me/my sdks/etcd/v-3.5.12", version = "3.5.12", name = "etcd" },
+    },
+})
+assert(#executed == 1, "one build command")
+assert(string.find(executed[1], "cd '/home/me/my sdks/etcd/v-3.5.12' && git clone", 1, true), executed[1])
+
 next_status = 2
 local ok, err = pcall(function()
     plugin:PostInstall(ctx)

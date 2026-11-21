@@ -43,6 +43,10 @@ assert(path_for("/home/me/.vfox/sdks/etcd/v-3.4.32") == "/home/me/.vfox/sdks/etc
 present = { ["/home/me/.vfox/sdks/etcd/v-3.5.12/etcd"] = true }
 assert(path_for("/home/me/.vfox/sdks/etcd/v-3.5.12") == "/home/me/.vfox/sdks/etcd/v-3.5.12")
 
+-- A path with a space is handled the same way: no shell sees it.
+present = { ["/home/me/my sdks/etcd-3.5.12/etcd/bin/etcd"] = true }
+assert(path_for("/home/me/my sdks/etcd-3.5.12") == "/home/me/my sdks/etcd-3.5.12/etcd/bin")
+
 -- With nothing found, the root is still the PATH entry.
 present = {}
 assert(path_for("/opt/etcd") == "/opt/etcd")

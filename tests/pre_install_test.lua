@@ -60,6 +60,13 @@ ok, err = pcall(function()
     return plugin:PreInstall({ version = "3.5.12" })
 end)
 assert(not ok and string.find(tostring(err), "HTTP 500", 1, true), tostring(err))
+
+-- A release without a SHA256SUMS answers 404, and the install stops with that status.
+status = 404
+ok, err = pcall(function()
+    return plugin:PreInstall({ version = "3.5.12" })
+end)
+assert(not ok and string.find(tostring(err), "HTTP 404", 1, true), tostring(err))
 status = 200
 
 -- A version that is not a release never reaches the network.
