@@ -22,7 +22,7 @@ make install-gofail
 FAILPOINTS=true make build
 ```
 
-克隆的是你所请求版本的标签。本插件的早期版本克隆的是默认分支，因此构建出的 etcd 与所指定的版本不同。
+克隆的是你所请求版本的标签。0.2.1 之前的插件版本克隆的是默认分支，因此构建出的 etcd 与所指定的版本不同。
 
 gofail 必须在 make 目标运行之前已位于 `PATH` 中。`go install` 会把它放入 `GOBIN`；若 `GOBIN` 为空，则放入 `GOPATH` 的第一个条目，因此命令会先把该目录加入 `PATH`。随后，构建会在 `FAILPOINTS=true` 的条件下运行，因为 etcd 的构建脚本只有在设置了该变量时才会启用 failpoint。带有 failpoint 的构建，其 Git SHA 中会包含 `-FAILPOINTS`，`etcd --version` 会将其打印出来。
 

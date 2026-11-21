@@ -4,7 +4,7 @@
 
 以下是每个发布版本中用户能够感知到的变化。GitHub 的发布页面列出了对应的拉取请求。
 
-## Unreleased
+## 0.2.1 (2026-11-21)
 
 - `vfox link --detect etcd` 会找到机器上已经安装的 etcd，并将它们链接进来，而不再下载另一份副本。该功能需要 vfox 1.1.0 或更高版本。每个安装都以其版本及发现位置命名，例如 `3.5.12-system` 或 `3.5.12-brew`。参见 [link.md](link.md)。
 - `BUILD_WITH_FAILPOINT=yes` 会构建你所安装版本对应的发布标签，而不是默认分支。早期版本克隆的是默认分支，因此 `vfox install etcd@3.4.32` 构建出的 etcd 与所指定的版本不同。该构建会把 gofail 加入 `PATH` 并设置 `FAILPOINTS=true`，缺少其中任何一项，二进制文件中就没有任何 failpoint。该构建已在 etcd 3.4.32 和 3.5.12 上测试，etcd 3.6.0 则会因错误而中止。参见 [failpoint.md](failpoint.md)。

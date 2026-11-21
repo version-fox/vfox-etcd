@@ -66,7 +66,7 @@ CI 会运行这些检查，拉取请求必须全部通过。请运行与你所�
 
 ## 变更日志
 
-每一项面向用户的变更，都要在 `docs/changes.md` 和 `docs/zh-CN/changes.md` 中、`## Unreleased` 标题下各添加一行。维护者发布时会重命名该标题。
+每一项面向用户的变更，都要在 `docs/changes.md` 和 `docs/zh-CN/changes.md` 中、最新发布版本之上的 `## Unreleased` 标题下各添加一行。维护者发布时，会把该标题改为版本号和日期。
 
 ## 许可证头
 

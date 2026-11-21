@@ -66,7 +66,7 @@ Translate the sentences, and keep the commands and the code blocks the same. Eac
 
 ## Changes
 
-Every user-visible change adds a line to `docs/changes.md` and to `docs/zh-CN/changes.md`, under `## Unreleased`. Maintainers rename that heading when they release.
+Every user-visible change adds a line to `docs/changes.md` and to `docs/zh-CN/changes.md`, under `## Unreleased` above the newest release. Maintainers rename that heading to the version and date when they release.
 
 ## License headers
 
