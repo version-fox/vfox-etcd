@@ -18,6 +18,7 @@ local test = require("vfox.test")
 local VERSIONS_URL = "https://fastly.jsdelivr.net/gh/version-fox/vfox-etcd@main/assets/versions.txt"
 local body = "3.8.0-alpha.0\n3.5.12\r\n\n3.4.32\nnot a version\n"
 local status = 200
+local failure = nil
 
 local plugin = test.load({
     os = "linux",
@@ -25,6 +26,9 @@ local plugin = test.load({
     env = {},
     http = function(request)
         assert(request.url == VERSIONS_URL, request.url)
+        if failure ~= nil then
+            return nil, failure
+        end
         return { status_code = status, body = body, headers = {} }
     end,
 })
@@ -41,3 +45,12 @@ local ok, err = pcall(function()
     return plugin:Available({})
 end)
 assert(not ok and string.find(tostring(err), "HTTP 503", 1, true), tostring(err))
+status = 200
+
+-- A request that cannot connect is reported with its URL and the error, not as a Lua error on a nil response.
+failure = "dial tcp: lookup fastly.jsdelivr.net: no such host"
+ok, err = pcall(function()
+    return plugin:Available({})
+end)
+assert(not ok and string.find(tostring(err), "could not download " .. VERSIONS_URL, 1, true), tostring(err))
+assert(string.find(tostring(err), "no such host", 1, true), tostring(err))

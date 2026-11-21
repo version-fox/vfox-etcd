@@ -17,6 +17,18 @@ vfox install etcd@3.5.12
 
 该发布版本没有适用于你所在平台的发布包。消息中会写明插件所需的那个发布包。请选择包含该发布包的发布版本，或阅读 [platforms.md](platforms.md)。例如，3.4.32 没有适用于 Apple 芯片的发布包，而 macOS 的 arm64 发布包从 3.5.5 开始提供。
 
+## `could not download https://github.com/etcd-io/etcd/releases/download/v3.5.0-alpha.0/SHA256SUMS: HTTP 404`
+
+该发布版本没有发布 `SHA256SUMS`，且版本号为 3.4.0 或更高。插件不会在没有校验和的情况下安装此类发布版本的发布包，因此安装会中止。请选择 3.4.0 或更高、且发布了该文件的版本。早于 3.4.0 的发布版本会改用固定的校验值进行核对，参见下一节。
+
+## `etcd 0.4.9 publishes no checksum for ..., so the archive is checked against the SHA-256 pinned in this plugin.`
+
+该发布版本早于 3.4.0，其 `SHA256SUMS` 中没有该发布包的条目，或者根本没有该文件。插件会用为该发布包固定的 SHA-256 值进行核对，并在安装前打印这一行。这些固定值取自插件固定时 GitHub 提供的发布包，因此该检查能发现之后的变动，但无法发现固定时下载到的文件本身有问题。
+
+## `no checksum for ... and none is pinned for it in this plugin`
+
+该发布版本没有适用于该平台的发布包，或者该版本不在版本列表中，因此插件没有它的 checksum，也不会安装它。请选择其他发布版本，或参阅 [platforms.md](platforms.md)。
+
 ## `could not download https://...`
 
 插件无法连接 GitHub，或者 GitHub 返回了一个错误，该错误会连同其 HTTP 状态码一起显示。请检查你的网络和任何代理设置，然后重新运行该命令。版本列表来自 jsDelivr，因此 `vfox search etcd` 也可能因为同样的网络问题而失败。

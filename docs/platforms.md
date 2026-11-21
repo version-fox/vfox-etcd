@@ -2,7 +2,7 @@
 
 [中文](zh-CN/platforms.md) | [English](platforms.md)
 
-The plugin installs the archive that etcd publishes for your platform. Which archives exist depends on the release, and each release lists its archives in `SHA256SUMS`.
+The plugin installs the archive that etcd publishes for your platform. Which archives exist depends on the release. A release lists its archives in `SHA256SUMS`. Releases before 3.4.0 mostly publish none, so the plugin checks their archives against checksums it pins, see [troubleshooting.md](troubleshooting.md).
 
 | Operating system | CPU | Archive | Notes |
 | --- | --- | --- | --- |

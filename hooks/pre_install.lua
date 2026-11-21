@@ -36,9 +36,12 @@ function PLUGIN:PreInstall(ctx)
     end
 
     local file = etcdUtils.archive_name(etcd_version, RUNTIME.osType, RUNTIME.archType)
-    local checksum = etcdUtils.get_sha256sums(etcd_version, file)
+    local checksum, source = etcdUtils.get_sha256sums(etcd_version, file)
     local download_url = etcdUtils.RELEASE_URL .. etcd_version .. "/" .. file
     print("etcd download url: " .. download_url)
+    if source == "pinned" then
+        print(etcdUtils.pinned_notice(etcd_version, file))
+    end
 
     return {
         version = etcd_version,
