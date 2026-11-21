@@ -10,9 +10,9 @@ This page is for people who change the plugin. For using it, see the [README](..
 | --- | --- |
 | `metadata.lua` | The plugin name, version and minimum vfox version. The release workflow sets the version. |
 | `hooks/` | One file per vfox hook: `available.lua`, `pre_install.lua`, `post_install.lua`, `env_keys.lua`, `pre_use.lua` and `detect.lua`. |
-| `lib/` | Helpers the hooks require: `etcd_utils.lua` for downloads, checksums and version strings, and `detect_etcd.lua` for finding installations. |
+| `lib/` | Helpers the hooks require: `etcd_utils.lua` for downloads, checksums and version strings, `pinned_checksums.lua` for the SHA-256 of old releases, and `detect_etcd.lua` for finding installations. |
 | `tests/` | `*_test.lua` files, which `vfox plugin test` runs offline, and `tests/e2e`, the Go suites that install the plugin. |
-| `assets/` | `versions.txt`, the released versions that `vfox search` shows, and the script that refreshes it. |
+| `assets/` | `versions.txt`, the released versions that `vfox search` shows, the script that refreshes it, and `pin_old_checksums.py`, which writes `lib/pinned_checksums.lua`. |
 | `website/` | The landing pages, in Chinese and English, built by `website/build.py`. |
 | `docs/` | This documentation, in English, with the Chinese pages under `docs/zh-CN/`. |
 | `.github/` | The workflows, the documentation check and the pull request template. |
@@ -20,7 +20,7 @@ This page is for people who change the plugin. For using it, see the [README](..
 ## What the hooks do
 
 - `Available` lists the versions in `assets/versions.txt`.
-- `PreInstall` checks the version, and returns the archive URL and the checksum from the release's `SHA256SUMS`. A release older than `3.4.0` may have no checksum for its archive; then the archive is installed with a warning. With `BUILD_WITH_FAILPOINT=yes` on Linux or macOS, it returns no archive, so the source is built.
+- `PreInstall` checks the version, and returns the archive URL and the checksum from the release's `SHA256SUMS`. A release older than `3.4.0` may have no checksum for its archive; then the checksum is the one pinned in `lib/pinned_checksums.lua`. With `BUILD_WITH_FAILPOINT=yes` on Linux or macOS, it returns no archive, so the source is built.
 - `PostInstall` runs the failpoint build when it is asked for.
 - `EnvKeys` puts the binaries on `PATH`. They sit in `bin/` for a linked system install, in `etcd/bin` for a source build, and at the root for an archive.
 - `PreUse` refuses a version that is not installed.
@@ -93,8 +93,18 @@ The workflow follows the shared `@v1` release-tool version. Updating the tool do
 
 ## Versions list
 
-`assets/versions.txt` is refreshed by the `update_etcd_versions` workflow every Monday. It reads the etcd tags with the GitHub API, and keeps a version when its linux-amd64 archive can be installed: the release's `SHA256SUMS` lists the archive, or the release is older than `UNVERIFIED_BEFORE`, which is `3.4.0` in both `lib/etcd_utils.lua` and `assets/get_all_etcd_versions.py`, and the archive can be downloaded. The checks run 16 at a time. It fails, without touching the list, when GitHub cannot be reached or answers with an error other than 404 for `SHA256SUMS` or the archive, because a 404 means the release does not publish that file. To refresh it by hand, run it from the `assets` directory with a token in `GITHUB_TOKEN`:
+`assets/versions.txt` is refreshed by the `update_etcd_versions` workflow every Monday. It reads the etcd tags with the GitHub API, and keeps a version when its linux-amd64 archive can be installed: the release's `SHA256SUMS` lists the archive, or the release is older than `3.4.0` and the archive can be downloaded; the plugin then checks that archive against `lib/pinned_checksums.lua`. The checks run 16 at a time. It fails, without touching the list, when GitHub cannot be reached or answers with an error other than 404 for `SHA256SUMS` or the archive, because a 404 means the release does not publish that file. To refresh it by hand, run it from the `assets` directory with a token in `GITHUB_TOKEN`:
 
 ```bash
 cd assets && python3 -m pip install requests packaging && python3 get_all_etcd_versions.py
 ```
+
+## Pinned checksums
+
+Releases before `3.4.0` mostly publish no `SHA256SUMS`, so the plugin checks their archives against the SHA-256 values in `lib/pinned_checksums.lua`. `assets/pin_old_checksums.py` writes that file. For every listed old release, it downloads each archive of the supported platforms that the release's `SHA256SUMS` does not list, and records the hash of the archive as GitHub served it. GitHub publishes no digest for these assets, so nothing independent confirms the values. The downloads total about 6 GB. The script keeps its progress in the system temporary directory, so an interrupted run resumes. Run it from the repository root:
+
+```bash
+python3 assets/pin_old_checksums.py
+```
+
+Rerun it only when the list of old releases changes, and review the diff of `lib/pinned_checksums.lua`.

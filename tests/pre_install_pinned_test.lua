@@ -12,12 +12,15 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
--- PreInstall on Linux amd64 for releases before 3.4.0: an archive without a checksum is installed with a warning,
--- a checksum that is listed is always used, and a failure other than 404 still stops the install.
+-- PreInstall for an archive of a release before 3.4.0 uses the checksum the release publishes, and the SHA-256 pinned
+-- in pinned_checksums.lua when it publishes none. A release with no pin, a failure other than 404, and a release from
+-- 3.4.0 on without a checksum all stop the install.
+package.path = "./lib/?.lua;" .. package.path
 local test = require("vfox.test")
+local pinned = require("pinned_checksums")
 
 local BASE = "https://github.com/etcd-io/etcd/releases/download/v"
-local CHECKSUM = "3333333333333333333333333333333333333333333333333333333333333333"
+local PUBLISHED = "3333333333333333333333333333333333333333333333333333333333333333"
 local answers = {}
 
 local plugin = test.load({
@@ -48,38 +51,32 @@ local function failure(version)
     return tostring(err)
 end
 
--- 3.3.13 publishes no SHA256SUMS: the archive is installed without a checksum, and the plugin says why.
+local function publish(version, body)
+    answers[BASE .. version .. "/SHA256SUMS"] = { status_code = 200, body = body, headers = {} }
+end
+
+-- 3.3.13 lists its archives by download URL, and the entry for linux-amd64 is the published checksum.
+publish("3.3.13", PUBLISHED .. " " .. BASE .. "3.3.13/etcd-v3.3.13-linux-amd64.tar.gz\n")
 local info, output = install("3.3.13")
+assert(info.sha256 == PUBLISHED, tostring(info.sha256))
 assert(info.url == BASE .. "3.3.13/etcd-v3.3.13-linux-amd64.tar.gz", info.url)
-assert(info.sha256 == nil, "no checksum is given to vfox")
-assert(
-    string.find(output, "WARNING: etcd 3.3.13 publishes no checksum for etcd-v3.3.13-linux-amd64.tar.gz", 1, true),
-    output
-)
+assert(not string.find(output, "pinned", 1, true), output)
+answers[BASE .. "3.3.13/SHA256SUMS"] = nil
 
--- 3.4.0-rc.1 is a pre-release of 3.4.0, so it is older than 3.4.0 and may go without a checksum too.
-info = install("3.4.0-rc.1")
-assert(info.sha256 == nil)
+-- 0.4.9 publishes no SHA256SUMS, so its linux-amd64 archive is checked against the pinned value.
+local PINNED = pinned["0.4.9"]["etcd-v0.4.9-linux-amd64.tar.gz"]
+info, output = install("0.4.9")
+assert(info.sha256 == PINNED, tostring(info.sha256))
+assert(string.find(output, "SHA-256 pinned in this plugin", 1, true), output)
 
--- A checksum that is listed is used, as for any release, and no warning is printed.
-answers[BASE .. "3.3.19/SHA256SUMS"] = {
-    status_code = 200,
-    body = CHECKSUM .. "  etcd-v3.3.19-linux-amd64.tar.gz\n",
-    headers = {},
-}
-info, output = install("3.3.19")
-assert(info.sha256 == CHECKSUM, tostring(info.sha256))
-assert(not string.find(output, "WARNING", 1, true), output)
+-- A SHA256SUMS that leaves out the archive falls back to the pinned value as well.
+publish("0.4.9", PUBLISHED .. "  etcd-v0.4.9-darwin-amd64.zip\n")
+info = install("0.4.9")
+assert(info.sha256 == PINNED, tostring(info.sha256))
+answers[BASE .. "0.4.9/SHA256SUMS"] = nil
 
--- A checksum file without an entry for the archive is treated like a missing one, for a release before 3.4.0.
-answers[BASE .. "3.3.19/SHA256SUMS"] = {
-    status_code = 200,
-    body = CHECKSUM .. "  etcd-v3.3.19-darwin-amd64.zip\n",
-    headers = {},
-}
-info, output = install("3.3.19")
-assert(info.sha256 == nil, tostring(info.sha256))
-assert(string.find(output, "WARNING: etcd 3.3.19", 1, true), output)
+-- A release with no pinned archive, such as 0.1.0, which has no linux-amd64 archive, stops the install.
+assert(string.find(failure("0.1.0"), "none is pinned", 1, true))
 
 -- A failure other than 404 stops the install, even for an old release.
 answers[BASE .. "3.3.13/SHA256SUMS"] = { status_code = 500, body = "", headers = {} }

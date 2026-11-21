@@ -6,7 +6,7 @@ The plugin installs etcd releases from GitHub. A version is the release number, 
 
 ## Search
 
-`vfox search etcd` lists the versions the plugin can install. The list is kept in `assets/versions.txt` on the default branch, and a workflow refreshes it every week from the etcd tags. A release is listed when its linux-amd64 archive can be installed: its `SHA256SUMS` lists the archive, or the release is older than 3.4.0 and its archive can be downloaded. So `latest` is the newest release that installs on Linux amd64. Another platform may lack the archive of a listed version, see [platforms.md](platforms.md).
+`vfox search etcd` lists the versions the plugin can install. The list is kept in `assets/versions.txt` on the default branch, and a workflow refreshes it every week from the etcd tags. A release is listed when its linux-amd64 archive can be installed: its `SHA256SUMS` lists the archive, or the release is older than 3.4.0 and its archives are checked against SHA-256 values pinned in the plugin. So `latest` is the newest release that installs on Linux amd64. Another platform may lack the archive of a listed version, see [platforms.md](platforms.md).
 
 ## Install
 
@@ -14,7 +14,7 @@ The plugin installs etcd releases from GitHub. A version is the release number, 
 vfox install etcd@3.5.12
 ```
 
-vfox downloads the archive for your platform from the etcd release and checks it against the SHA-256 that the release publishes in `SHA256SUMS`. If that file has no entry for your platform, the install stops with `no checksum for ...`: the release has no build for your platform, see [platforms.md](platforms.md). A release older than 3.4.0 may publish no checksum at all. Its archive is then installed without a check, and the plugin prints a warning first, see [troubleshooting.md](troubleshooting.md).
+vfox downloads the archive for your platform from the etcd release and checks it against the SHA-256 that the release publishes in `SHA256SUMS`. If that file has no entry for your platform, the install stops with `no checksum for ...`: the release has no build for your platform, see [platforms.md](platforms.md). A release older than 3.4.0 may publish no checksum at all. Its archive is then installed without a check, and the plugin says so before it installs, see [troubleshooting.md](troubleshooting.md).
 
 Give the full version. A partial version such as `etcd@3.5` is refused with `invalid etcd version`, because the plugin cannot tell which release it means.
 

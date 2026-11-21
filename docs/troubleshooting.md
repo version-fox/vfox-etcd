@@ -19,11 +19,15 @@ The release has no archive for your platform. The message names the archive the 
 
 ## `could not download https://github.com/etcd-io/etcd/releases/download/v3.5.0-alpha.0/SHA256SUMS: HTTP 404`
 
-The release publishes no `SHA256SUMS`, and it is 3.4.0 or later. The plugin does not install an archive from such a release without a checksum, so the install stops. Pick a release from 3.4.0 on, which publishes one. Releases before 3.4.0 are the exception, see the next section.
+The release publishes no `SHA256SUMS`, and it is 3.4.0 or later. The plugin does not install an archive from such a release without a checksum, so the install stops. Pick a release from 3.4.0 on, which publishes one. Releases before 3.4.0 are checked against pinned checksums instead, see the next section.
 
-## `WARNING: etcd 3.3.13 publishes no checksum for etcd-v3.3.13-linux-amd64.tar.gz, so the archive is installed without a check.`
+## `etcd 0.4.9 publishes no checksum for ..., so the archive is checked against the SHA-256 pinned in this plugin.`
 
-This release is before 3.4.0, and its release has no checksum for the archive. The plugin installs the archive without a check, and prints this warning first. vfox also prints `WARNING: Checksum is not provided, skip verify...`. To have the archive verified, install a release from 3.4.0 on. Nothing else checks the archive here, so it is only as trustworthy as the HTTPS download from GitHub.
+The release is before 3.4.0, and its `SHA256SUMS` has no entry for the archive, or no file at all. The plugin checks the archive against the SHA-256 that it pins for it, and prints this line before the install. The pinned values were taken from the archives GitHub served when the plugin was pinned, so the check guards against a change after that, not against a bad download at that time.
+
+## `no checksum for ... and none is pinned for it in this plugin`
+
+The release has no archive for that platform, or it is not in the version list, so the plugin has no checksum for it and does not install it. Pick another release, or see [platforms.md](platforms.md).
 
 ## `could not download https://...`
 

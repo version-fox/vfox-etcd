@@ -13,6 +13,7 @@
 -- limitations under the License.
 
 local http = require("http")
+local pinned_checksums = require("pinned_checksums")
 
 local etcd_utils = {}
 
@@ -22,10 +23,10 @@ etcd_utils.RELEASE_URL = "https://github.com/etcd-io/etcd/releases/download/v"
 etcd_utils.REPOSITORY_URL = "https://github.com/etcd-io/etcd.git"
 --- The released versions, one per line. The update_etcd_versions workflow keeps the file current.
 etcd_utils.VERSIONS_URL = "https://fastly.jsdelivr.net/gh/version-fox/vfox-etcd@main/assets/versions.txt"
---- A release before this version may be installed without a checksum, when its release publishes none for the
---- archive. From this version on, the checksum is required. Keep it in step with UNVERIFIED_BEFORE in
---- assets/get_all_etcd_versions.py.
-etcd_utils.UNVERIFIED_BEFORE = "3.4.0"
+--- From this version on, every release lists its archives in SHA256SUMS, and an archive it does not list is refused.
+--- An older release may publish no SHA256SUMS, so its archives are checked against the SHA-256 values pinned in
+--- pinned_checksums.lua. Keep it in step with CHECKSUMS_FROM in assets/get_all_etcd_versions.py.
+etcd_utils.CHECKSUMS_FROM = "3.4.0"
 
 -- A release number, with an optional pre-release suffix such as 3.8.0-alpha.0. Only
 -- strings of this shape reach a download URL or the shell of the failpoint build.
@@ -89,36 +90,11 @@ function etcd_utils.archive_name(version, os_type, arch_type)
     return "etcd-v" .. version .. "-" .. string.lower(os_type) .. "-" .. string.lower(arch_type) .. extension
 end
 
---- Returns the SHA-256 that etcd's SHA256SUMS lists for file_name, or nil when the release is older than
---- UNVERIFIED_BEFORE and publishes none for it. Any other missing entry is an error: vfox skips the check when
---- no checksum is given, so a silent gap would install an unverified archive.
---- @param version string
---- @param file_name string
---- @return string|nil
-function etcd_utils.get_sha256sums(version, file_name)
-    local url = etcd_utils.RELEASE_URL .. version .. "/SHA256SUMS"
-    local unverified_ok = etcd_utils.allows_unverified(version)
-    local resp = fetch(url, unverified_ok and 404 or nil)
-    if resp.status_code == 404 then
-        return nil
-    end
-    for line in string.gmatch(resp.body, "[^\n]+") do
-        local checksum, name = string.match(line, "^(%x+)%s+%*?(%S+)")
-        if name == file_name then
-            return checksum
-        end
-    end
-    if unverified_ok then
-        return nil
-    end
-    error("no checksum for " .. file_name .. " in " .. url)
-end
-
---- Reports whether version is older than UNVERIFIED_BEFORE, so that its archive may be installed without a
---- checksum. A pre-release sorts before its release: 3.4.0-rc.1 is older than 3.4.0.
+--- Reports whether version is older than CHECKSUMS_FROM. A pre-release sorts before its release, so 3.4.0-rc.1 is
+--- older than 3.4.0.
 --- @param version string a release number that passed is_valid_version
 --- @return boolean
-function etcd_utils.allows_unverified(version)
+function etcd_utils.is_before_checksums(version)
     local function parts(value)
         local major, minor, patch, rest = string.match(value, "^(%d+)%.(%d+)%.(%d+)(.*)$")
         if major == nil then
@@ -130,7 +106,7 @@ function etcd_utils.allows_unverified(version)
     if current == nil then
         return false
     end
-    local limit = parts(etcd_utils.UNVERIFIED_BEFORE)
+    local limit = parts(etcd_utils.CHECKSUMS_FROM)
     for i = 1, 4 do
         if current[i] ~= limit[i] then
             return current[i] < limit[i]
@@ -139,18 +115,58 @@ function etcd_utils.allows_unverified(version)
     return false
 end
 
---- Returns the warning that PreInstall prints before it installs an archive without a checksum.
+--- Returns the SHA-256 that pinned_checksums.lua holds for an archive of an old release. Stops with the URL of the
+--- SHA256SUMS that did not list the archive when nothing is pinned for it.
+--- @param version string
+--- @param file_name string
+--- @param url string
+--- @return string
+local function pinned_checksum(version, file_name, url)
+    local pins = pinned_checksums[version]
+    local checksum = pins and pins[file_name]
+    if checksum == nil then
+        error("no checksum for " .. file_name .. " in " .. url .. ", and none is pinned for it in this plugin")
+    end
+    return checksum
+end
+
+--- Returns the SHA-256 for file_name of version, and where it comes from: "published" when the release's SHA256SUMS
+--- lists the archive, or "pinned" when the release is older than CHECKSUMS_FROM and the plugin pins the archive. Any
+--- other missing entry is an error: vfox skips the check when no checksum is given, so a silent gap would install an
+--- unverified archive.
+--- @param version string
+--- @param file_name string
+--- @return string checksum
+--- @return string source "published" or "pinned"
+function etcd_utils.get_sha256sums(version, file_name)
+    local url = etcd_utils.RELEASE_URL .. version .. "/SHA256SUMS"
+    local before = etcd_utils.is_before_checksums(version)
+    local resp = fetch(url, before and 404 or nil)
+    if resp.status_code == 404 then
+        return pinned_checksum(version, file_name, url), "pinned"
+    end
+    for line in string.gmatch(resp.body, "[^\n]+") do
+        local checksum, name = string.match(line, "^(%x+)%s+%*?(%S+)")
+        -- Some releases name each archive by its download URL rather than by its file name.
+        if name ~= nil and string.match(name, "([^/]+)$") == file_name then
+            return checksum, "published"
+        end
+    end
+    if before then
+        return pinned_checksum(version, file_name, url), "pinned"
+    end
+    error("no checksum for " .. file_name .. " in " .. url)
+end
+
+--- Returns the note PreInstall prints when an archive is checked against a pinned SHA-256.
 --- @param version string
 --- @param file_name string
 --- @return string
-function etcd_utils.unverified_warning(version, file_name)
+function etcd_utils.pinned_notice(version, file_name)
     return string.format(
-        "WARNING: etcd %s publishes no checksum for %s, so the archive is installed without a check. "
-            .. "The plugin allows this for releases before %s; install a release from %s on to have it verified.",
+        "etcd %s publishes no checksum for %s, so the archive is checked against the SHA-256 pinned in this plugin.",
         version,
-        file_name,
-        etcd_utils.UNVERIFIED_BEFORE,
-        etcd_utils.UNVERIFIED_BEFORE
+        file_name
     )
 end
 

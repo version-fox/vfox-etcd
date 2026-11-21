@@ -57,13 +57,11 @@ assert(
     "a non-release must not reach the shell"
 )
 
--- Releases before UNVERIFIED_BEFORE may be installed without a checksum; 3.4.0 and later may not.
+-- Releases before CHECKSUMS_FROM are the ones whose archives are pinned; 3.4.0 and later must publish a checksum.
 for _, version in ipairs({ "0.2.0-rc4", "2.3.8", "3.2.30", "3.3.13", "3.4.0-rc.1" }) do
-    assert(etcd_utils.allows_unverified(version), "should allow " .. version)
+    assert(etcd_utils.is_before_checksums(version), "should be before 3.4.0: " .. version)
 end
 for _, version in ipairs({ "3.4.0", "3.4.1", "3.5.0-alpha.0", "3.5.12" }) do
-    assert(not etcd_utils.allows_unverified(version), "should not allow " .. version)
+    assert(not etcd_utils.is_before_checksums(version), "should not be before 3.4.0: " .. version)
 end
-assert(
-    string.find(etcd_utils.unverified_warning("3.3.13", "etcd-v3.3.13-linux-amd64.tar.gz"), "without a check", 1, true)
-)
+assert(string.find(etcd_utils.pinned_notice("3.3.13", "etcd-v3.3.13-linux-amd64.tar.gz"), "pinned", 1, true))

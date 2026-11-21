@@ -10,9 +10,9 @@
 | --- | --- |
 | `metadata.lua` | 插件名称、版本号以及所需的最低 vfox 版本。版本号由发布工作流设置。 |
 | `hooks/` | 每个 vfox 钩子对应一个文件：`available.lua`、`pre_install.lua`、`post_install.lua`、`env_keys.lua`、`pre_use.lua` 和 `detect.lua`。 |
-| `lib/` | 钩子所需的辅助模块：`etcd_utils.lua` 负责下载、checksum 和版本字符串，`detect_etcd.lua` 负责查找已有的安装。 |
+| `lib/` | 钩子所需的辅助模块：`etcd_utils.lua` 负责下载、checksum 和版本字符串，`pinned_checksums.lua` 保存旧版本的 SHA-256，`detect_etcd.lua` 负责查找已有的安装。 |
 | `tests/` | `*_test.lua` 文件（由 `vfox plugin test` 离线运行），以及 `tests/e2e`，即安装插件的 Go 测试套件。 |
-| `assets/` | `versions.txt`（即 `vfox search` 显示的已发布版本），以及刷新该文件的脚本。 |
+| `assets/` | `versions.txt`（即 `vfox search` 显示的已发布版本）、刷新该文件的脚本，以及写入 `lib/pinned_checksums.lua` 的 `pin_old_checksums.py`。 |
 | `website/` | 中英文落地页，由 `website/build.py` 构建。 |
 | `docs/` | 本文档的英文版，中文页面位于 `docs/zh-CN/` 下。 |
 | `.github/` | 工作流、文档检查以及拉取请求模板。 |
@@ -20,7 +20,7 @@
 ## 各钩子的作用
 
 - `Available` 列出 `assets/versions.txt` 中的版本。
-- `PreInstall` 检查版本，并从发布版本的 `SHA256SUMS` 中返回发布包的 URL 和 checksum。早于 `3.4.0` 的发布版本可能没有该发布包的 checksum，此时会在带警告的情况下安装该发布包。在 Linux 或 macOS 上设置 `BUILD_WITH_FAILPOINT=yes` 时，它不返回发布包，因此会改为从源码构建。
+- `PreInstall` 检查版本，并从发布版本的 `SHA256SUMS` 中返回发布包的 URL 和 checksum。早于 `3.4.0` 的发布版本可能没有该发布包的 checksum，此时会改用为该发布包固定的 SHA-256 值进行核对。在 Linux 或 macOS 上设置 `BUILD_WITH_FAILPOINT=yes` 时，它不返回发布包，因此会改为从源码构建。
 - `PostInstall` 在被要求时运行 failpoint 构建。
 - `EnvKeys` 把可执行文件放入 `PATH`。链接的系统安装位于 `bin/` 中，源码构建位于 `etcd/bin` 中，发布包则位于根目录。
 - `PreUse` 拒绝使用未安装的版本。
@@ -93,8 +93,18 @@ python3 -m http.server 8080 --directory /tmp/vfox-etcd-site
 
 ## 版本列表
 
-`assets/versions.txt` 由 `update_etcd_versions` 工作流每周一刷新。它通过 GitHub API 读取 etcd 的标签，并保留其 linux-amd64 发布包可以安装的版本：该发布版本的 `SHA256SUMS` 列出了此发布包，或者该版本早于 `UNVERIFIED_BEFORE`（在 `lib/etcd_utils.lua` 和 `assets/get_all_etcd_versions.py` 中均为 `3.4.0`）且该发布包可以下载。这些检查同时进行，最多 16 个。当无法连接 GitHub，或请求 `SHA256SUMS` 或发布包时返回的错误不是 404 时，它会失败，且不会修改列表；404 表示该发布版本不提供该文件。若要手动刷新，请在 `assets` 目录中运行它，并在 `GITHUB_TOKEN` 中提供令牌：
+`assets/versions.txt` 由 `update_etcd_versions` 工作流每周一刷新。它通过 GitHub API 读取 etcd 的标签，并保留其 linux-amd64 发布包可以安装的版本：该发布版本的 `SHA256SUMS` 列出了此发布包，或者该版本早于 `3.4.0` 且该发布包可以下载，插件随后会用 `lib/pinned_checksums.lua` 中为它固定的 SHA-256 值进行校验。这些检查同时进行，最多 16 个。当无法连接 GitHub，或请求 `SHA256SUMS` 或发布包时返回的错误不是 404 时，它会失败，且不会修改列表；404 表示该发布版本不提供该文件。若要手动刷新，请在 `assets` 目录中运行它，并在 `GITHUB_TOKEN` 中提供令牌：
 
 ```bash
 cd assets && python3 -m pip install requests packaging && python3 get_all_etcd_versions.py
 ```
+
+## 固定的校验值
+
+早于 `3.4.0` 的发布版本大多没有 `SHA256SUMS`，因此插件会用 `lib/pinned_checksums.lua` 中的 SHA-256 值核对它们的发布包。该文件由 `assets/pin_old_checksums.py` 写入：对于每个列出的旧版本，脚本会下载插件支持的每个平台中、其 `SHA256SUMS` 未列出的发布包，并记录 GitHub 提供的该发布包的哈希值。GitHub 不为这些资源发布摘要，因此没有独立的途径确认这些值。下载总量约 6 GB。脚本把进度保存在系统临时目录中，因此中断后可以续跑。请在仓库根目录运行：
+
+```bash
+python3 assets/pin_old_checksums.py
+```
+
+只有当旧版本列表变化时才需要重新运行，并请检查 `lib/pinned_checksums.lua` 的差异。

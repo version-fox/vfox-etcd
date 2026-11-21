@@ -6,7 +6,7 @@
 
 ## 搜索
 
-`vfox search etcd` 会列出插件可以安装的版本。该列表保存在默认分支的 `assets/versions.txt` 中，并由一个工作流每周根据 etcd 的 Git 标签刷新一次。只有当某个发布版本的 linux-amd64 发布包可以安装时，它才会被列出：其 `SHA256SUMS` 列出了该发布包，或者该版本早于 3.4.0 且其发布包可以下载。因此 `latest` 指的是 Linux amd64 上可以安装的最新发布版本。其他平台可能缺少已列出版本的发布包，参见 [platforms.md](platforms.md)。
+`vfox search etcd` 会列出插件可以安装的版本。该列表保存在默认分支的 `assets/versions.txt` 中，并由一个工作流每周根据 etcd 的 Git 标签刷新一次。只有当某个发布版本的 linux-amd64 发布包可以安装时，它才会被列出：其 `SHA256SUMS` 列出了该发布包，或者该版本早于 3.4.0，插件会用为其发布包固定的 SHA-256 值进行校验。因此 `latest` 指的是 Linux amd64 上可以安装的最新发布版本。其他平台可能缺少已列出版本的发布包，参见 [platforms.md](platforms.md)。
 
 ## 安装
 
@@ -14,7 +14,7 @@
 vfox install etcd@3.5.12
 ```
 
-vfox 会从 etcd 的发布版本中下载适用于你平台的发布包，并与该发布版本在 `SHA256SUMS` 中公布的 SHA-256 进行核对。如果该文件中没有你平台的条目，安装会因 `no checksum for ...` 而中止：这说明该发布版本没有适用于你平台的构建，参见 [platforms.md](platforms.md)。早于 3.4.0 的发布版本可能完全没有校验和文件。此时插件会先打印一条警告，然后在不进行校验的情况下安装其发布包，参见 [troubleshooting.md](troubleshooting.md)。
+vfox 会从 etcd 的发布版本中下载适用于你平台的发布包，并与该发布版本在 `SHA256SUMS` 中公布的 SHA-256 进行核对。如果该文件中没有你平台的条目，安装会因 `no checksum for ...` 而中止：这说明该发布版本没有适用于你平台的构建，参见 [platforms.md](platforms.md)。早于 3.4.0 的发布版本可能完全没有校验和文件。此时插件会用为其发布包固定的 SHA-256 值进行校验，并在安装前说明这一点，参见 [troubleshooting.md](troubleshooting.md)。
 
 请给出完整的版本号。像 `etcd@3.5` 这样的不完整版本会被拒绝并显示 `invalid etcd version`，因为插件无法判断它指的是哪一个发布版本。
 

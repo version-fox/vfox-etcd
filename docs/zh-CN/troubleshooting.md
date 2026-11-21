@@ -19,11 +19,15 @@ vfox install etcd@3.5.12
 
 ## `could not download https://github.com/etcd-io/etcd/releases/download/v3.5.0-alpha.0/SHA256SUMS: HTTP 404`
 
-该发布版本没有发布 `SHA256SUMS`，且版本号为 3.4.0 或更高。插件不会在没有校验和的情况下安装此类发布版本的发布包，因此安装会中止。请选择 3.4.0 或更高、且发布了该文件的版本。早于 3.4.0 的发布版本是例外，参见下一节。
+该发布版本没有发布 `SHA256SUMS`，且版本号为 3.4.0 或更高。插件不会在没有校验和的情况下安装此类发布版本的发布包，因此安装会中止。请选择 3.4.0 或更高、且发布了该文件的版本。早于 3.4.0 的发布版本会改用固定的校验值进行核对，参见下一节。
 
-## `WARNING: etcd 3.3.13 publishes no checksum for etcd-v3.3.13-linux-amd64.tar.gz, so the archive is installed without a check.`
+## `etcd 0.4.9 publishes no checksum for ..., so the archive is checked against the SHA-256 pinned in this plugin.`
 
-该版本早于 3.4.0，其发布版本没有该发布包的 checksum。插件会先打印这条警告，然后在不进行校验的情况下安装该发布包。vfox 也会打印 `WARNING: Checksum is not provided, skip verify...`。如需校验该发布包，请安装 3.4.0 或更高版本的发布版本。此处除了从 GitHub 通过 HTTPS 下载之外没有其他检查，因此该发布包的可信程度仅取决于这次下载。
+该发布版本早于 3.4.0，其 `SHA256SUMS` 中没有该发布包的条目，或者根本没有该文件。插件会用为该发布包固定的 SHA-256 值进行核对，并在安装前打印这一行。这些固定值取自插件固定时 GitHub 提供的发布包，因此该检查能发现之后的变动，但无法发现固定时下载到的文件本身有问题。
+
+## `no checksum for ... and none is pinned for it in this plugin`
+
+该发布版本没有适用于该平台的发布包，或者该版本不在版本列表中，因此插件没有它的 checksum，也不会安装它。请选择其他发布版本，或参阅 [platforms.md](platforms.md)。
 
 ## `could not download https://...`
 

@@ -17,10 +17,11 @@
 Run it from the assets directory, as the update_etcd_versions workflow does. The
 tags are saved beside it in etcd_versions_from_github_api.json. A version is kept
 when the plugin can install its linux-amd64 archive: the release's SHA256SUMS must
-list the archive, or the release must be older than UNVERIFIED_BEFORE, which may
-publish no checksum. When GitHub cannot be reached, the script exits with an error
-and leaves versions.txt alone, so the workflow shows the failure instead of
-quietly keeping an old list.
+list the archive, or the release must be older than CHECKSUMS_FROM and the archive
+must be downloadable. The archives of those older releases are checked against the
+SHA-256 values pinned in lib/pinned_checksums.lua, which pin_old_checksums.py writes.
+When GitHub cannot be reached, the script exits with an error and leaves versions.txt
+alone, so the workflow shows the failure instead of quietly keeping an old list.
 """
 
 import json
@@ -41,9 +42,9 @@ CONCURRENCY = 16
 RELEASE_PREFIX = "refs/tags/v"
 RELEASE_URL = "https://github.com/etcd-io/etcd/releases/download/v{version}/"
 ARCHIVE_NAME = "etcd-v{version}-linux-amd64.tar.gz"
-# A release before this version may be installed without a checksum. Keep it in step with UNVERIFIED_BEFORE in
-# lib/etcd_utils.lua.
-UNVERIFIED_BEFORE = "3.4.0"
+# From this version on, every release lists its archives in SHA256SUMS. An older release may not, and its archives
+# are pinned in lib/pinned_checksums.lua instead. Keep it in step with CHECKSUMS_FROM in lib/etcd_utils.lua.
+CHECKSUMS_FROM = "3.4.0"
 
 
 def fetch_tags():
@@ -91,13 +92,14 @@ def release_versions(tags):
     return sorted((v for v in versions if is_release(v)), key=Version, reverse=True)
 
 
-def listed_in_checksums(text, archive):
-    """Reports whether a SHA256SUMS file lists archive."""
+def checksum_names(text):
+    """Returns the archive names that a SHA256SUMS file lists. An entry may name the file or its download URL."""
+    names = set()
     for line in text.splitlines():
         fields = line.split()
-        if len(fields) == 2 and fields[1].lstrip("*") == archive:
-            return True
-    return False
+        if len(fields) == 2:
+            names.add(fields[1].lstrip("*").rsplit("/", 1)[-1])
+    return names
 
 
 def can_download(url):
@@ -114,9 +116,9 @@ def can_download(url):
 def is_installable(version):
     """Reports whether the plugin can install version's linux-amd64 archive.
 
-    The archive is installable when the release's SHA256SUMS lists it. A release older than UNVERIFIED_BEFORE
-    is installable without a checksum, so it counts when the archive can be downloaded. A release without a
-    SHA256SUMS answers 404; any other failure stops the script, so that a failed request cannot shrink the list.
+    The archive is installable when the release's SHA256SUMS lists it. A release older than CHECKSUMS_FROM is
+    installable when the archive can be downloaded, because its archives are pinned. A release without a SHA256SUMS
+    answers 404; any other failure stops the script, so that a failed request cannot shrink the list.
     """
     archive = ARCHIVE_NAME.format(version=version)
     release_url = RELEASE_URL.format(version=version)
@@ -124,9 +126,9 @@ def is_installable(version):
     response = requests.get(checksums_url, timeout=TIMEOUT_SECONDS)
     if response.status_code not in (200, 404):
         raise SystemExit(f"GitHub returned HTTP {response.status_code} for {checksums_url}; versions.txt is unchanged")
-    if response.status_code == 200 and listed_in_checksums(response.text, archive):
+    if response.status_code == 200 and archive in checksum_names(response.text):
         return True
-    if Version(version) >= Version(UNVERIFIED_BEFORE):
+    if Version(version) >= Version(CHECKSUMS_FROM):
         return False
     return can_download(release_url + archive)
 
