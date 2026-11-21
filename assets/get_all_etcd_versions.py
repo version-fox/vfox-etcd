@@ -16,16 +16,17 @@
 
 Run it from the assets directory, as the update_etcd_versions workflow does. The
 tags are saved beside it in etcd_versions_from_github_api.json. A version is kept
-only when the plugin can install it, which needs the release's SHA256SUMS to list
-the linux-amd64 archive: the plugin does not install an archive without a checksum.
-When GitHub cannot be reached, the script exits with an error and leaves
-versions.txt alone, so the workflow shows the failure instead of quietly keeping
-an old list.
+when the plugin can install its linux-amd64 archive: the release's SHA256SUMS must
+list the archive, or the release must be older than UNVERIFIED_BEFORE, which may
+publish no checksum. When GitHub cannot be reached, the script exits with an error
+and leaves versions.txt alone, so the workflow shows the failure instead of
+quietly keeping an old list.
 """
 
 import json
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
 import requests
 from packaging.version import InvalidVersion, Version
@@ -36,9 +37,13 @@ VERSIONS_FILE = "versions.txt"
 PAGES = 9
 PER_PAGE = 100
 TIMEOUT_SECONDS = 30
+CONCURRENCY = 16
 RELEASE_PREFIX = "refs/tags/v"
-CHECKSUMS_URL = "https://github.com/etcd-io/etcd/releases/download/v{version}/SHA256SUMS"
+RELEASE_URL = "https://github.com/etcd-io/etcd/releases/download/v{version}/"
 ARCHIVE_NAME = "etcd-v{version}-linux-amd64.tar.gz"
+# A release before this version may be installed without a checksum. Keep it in step with UNVERIFIED_BEFORE in
+# lib/etcd_utils.lua.
+UNVERIFIED_BEFORE = "3.4.0"
 
 
 def fetch_tags():
@@ -86,24 +91,44 @@ def release_versions(tags):
     return sorted((v for v in versions if is_release(v)), key=Version, reverse=True)
 
 
-def is_installable(version):
-    """Reports whether the plugin can install version: its SHA256SUMS must list the linux-amd64 archive.
-
-    A release without a SHA256SUMS answers 404 and is left out. Any other failure stops the script,
-    so that a request which failed cannot shrink the list.
-    """
-    url = CHECKSUMS_URL.format(version=version)
-    response = requests.get(url, timeout=TIMEOUT_SECONDS)
-    if response.status_code == 404:
-        return False
-    if response.status_code != 200:
-        raise SystemExit(f"GitHub returned HTTP {response.status_code} for {url}; versions.txt is unchanged")
-    archive = ARCHIVE_NAME.format(version=version)
-    for line in response.text.splitlines():
+def listed_in_checksums(text, archive):
+    """Reports whether a SHA256SUMS file lists archive."""
+    for line in text.splitlines():
         fields = line.split()
         if len(fields) == 2 and fields[1].lstrip("*") == archive:
             return True
     return False
+
+
+def can_download(url):
+    """Reports whether url serves a file. Only its first byte is requested, so the archive is not fetched."""
+    response = requests.get(url, headers={"Range": "bytes=0-0"}, stream=True, timeout=TIMEOUT_SECONDS)
+    response.close()
+    if response.status_code in (200, 206):
+        return True
+    if response.status_code == 404:
+        return False
+    raise SystemExit(f"GitHub returned HTTP {response.status_code} for {url}; versions.txt is unchanged")
+
+
+def is_installable(version):
+    """Reports whether the plugin can install version's linux-amd64 archive.
+
+    The archive is installable when the release's SHA256SUMS lists it. A release older than UNVERIFIED_BEFORE
+    is installable without a checksum, so it counts when the archive can be downloaded. A release without a
+    SHA256SUMS answers 404; any other failure stops the script, so that a failed request cannot shrink the list.
+    """
+    archive = ARCHIVE_NAME.format(version=version)
+    release_url = RELEASE_URL.format(version=version)
+    checksums_url = release_url + "SHA256SUMS"
+    response = requests.get(checksums_url, timeout=TIMEOUT_SECONDS)
+    if response.status_code not in (200, 404):
+        raise SystemExit(f"GitHub returned HTTP {response.status_code} for {checksums_url}; versions.txt is unchanged")
+    if response.status_code == 200 and listed_in_checksums(response.text, archive):
+        return True
+    if Version(version) >= Version(UNVERIFIED_BEFORE):
+        return False
+    return can_download(release_url + archive)
 
 
 def main():
@@ -111,7 +136,11 @@ def main():
     with open(TAGS_FILE, "w", encoding="utf-8") as file:
         json.dump(tags, file, indent=4)
 
-    versions = [version for version in release_versions(tags) if is_installable(version)]
+    candidates = release_versions(tags)
+    # Each check is a network request, so the checks run side by side. map keeps the newest-first order.
+    with ThreadPoolExecutor(max_workers=CONCURRENCY) as pool:
+        installable = list(pool.map(is_installable, candidates))
+    versions = [version for version, keep in zip(candidates, installable, strict=True) if keep]
     if not versions:
         raise SystemExit("no installable etcd release was found; versions.txt is unchanged")
     with open(VERSIONS_FILE, "w", encoding="utf-8", newline="\n") as file:

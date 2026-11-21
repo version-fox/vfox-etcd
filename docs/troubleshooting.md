@@ -17,6 +17,14 @@ vfox install etcd@3.5.12
 
 The release has no archive for your platform. The message names the archive the plugin wanted. Pick a release that has it, or read [platforms.md](platforms.md). For example, 3.4.32 has no Apple silicon archive, and the arm64 archive for macOS starts with 3.5.5.
 
+## `could not download https://github.com/etcd-io/etcd/releases/download/v3.5.0-alpha.0/SHA256SUMS: HTTP 404`
+
+The release publishes no `SHA256SUMS`, and it is 3.4.0 or later. The plugin does not install an archive from such a release without a checksum, so the install stops. Pick a release from 3.4.0 on, which publishes one. Releases before 3.4.0 are the exception, see the next section.
+
+## `WARNING: etcd 3.3.13 publishes no checksum for etcd-v3.3.13-linux-amd64.tar.gz, so the archive is installed without a check.`
+
+This release is before 3.4.0, and its release has no checksum for the archive. The plugin installs the archive without a check, and prints this warning first. vfox also prints `WARNING: Checksum is not provided, skip verify...`. To have the archive verified, install a release from 3.4.0 on. Nothing else checks the archive here, so it is only as trustworthy as the HTTPS download from GitHub.
+
 ## `could not download https://...`
 
 The plugin could not reach GitHub, or GitHub answered with an error that is shown with its HTTP status. Check your network and any proxy settings, then run the command again. The version list comes from jsDelivr, so `vfox search etcd` can fail on the same network problem.

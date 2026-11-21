@@ -22,6 +22,10 @@ etcd_utils.RELEASE_URL = "https://github.com/etcd-io/etcd/releases/download/v"
 etcd_utils.REPOSITORY_URL = "https://github.com/etcd-io/etcd.git"
 --- The released versions, one per line. The update_etcd_versions workflow keeps the file current.
 etcd_utils.VERSIONS_URL = "https://fastly.jsdelivr.net/gh/version-fox/vfox-etcd@main/assets/versions.txt"
+--- A release before this version may be installed without a checksum, when its release publishes none for the
+--- archive. From this version on, the checksum is required. Keep it in step with UNVERIFIED_BEFORE in
+--- assets/get_all_etcd_versions.py.
+etcd_utils.UNVERIFIED_BEFORE = "3.4.0"
 
 -- A release number, with an optional pre-release suffix such as 3.8.0-alpha.0. Only
 -- strings of this shape reach a download URL or the shell of the failpoint build.
@@ -43,24 +47,27 @@ function etcd_utils.trim(value)
     return result
 end
 
---- Downloads url and returns its body. Network failures and HTTP errors stop the hook with the URL in the message.
+--- Downloads url and returns the response. Network failures and HTTP errors stop the hook with the URL in the
+--- message, except allowed_status, which is returned for the caller to handle.
 --- @param url string
---- @return string
-local function fetch(url)
+--- @param allowed_status integer|nil an HTTP status to return instead of failing, such as 404
+--- @return table
+local function fetch(url, allowed_status)
     local resp, err = http.get({ url = url })
     if err ~= nil then
         error("could not download " .. url .. ": " .. tostring(err))
     end
-    if resp == nil or resp.status_code ~= 200 then
+    local allowed = allowed_status ~= nil and resp ~= nil and resp.status_code == allowed_status
+    if resp == nil or (resp.status_code ~= 200 and not allowed) then
         error("could not download " .. url .. ": HTTP " .. tostring(resp and resp.status_code))
     end
-    return resp.body
+    return resp
 end
 
 --- Returns the released versions for `vfox search etcd`.
 --- @return table
 function etcd_utils.get_release_versions()
-    local body = fetch(etcd_utils.VERSIONS_URL)
+    local body = fetch(etcd_utils.VERSIONS_URL).body
     local result = {}
     for line in string.gmatch(body, "[^\n]+") do
         local version = etcd_utils.trim(line)
@@ -82,21 +89,69 @@ function etcd_utils.archive_name(version, os_type, arch_type)
     return "etcd-v" .. version .. "-" .. string.lower(os_type) .. "-" .. string.lower(arch_type) .. extension
 end
 
---- Returns the SHA-256 that etcd's SHA256SUMS lists for file_name. A missing entry is an error: vfox
---- skips the check when no checksum is given, so a silent gap would install an unverified archive.
+--- Returns the SHA-256 that etcd's SHA256SUMS lists for file_name, or nil when the release is older than
+--- UNVERIFIED_BEFORE and publishes none for it. Any other missing entry is an error: vfox skips the check when
+--- no checksum is given, so a silent gap would install an unverified archive.
 --- @param version string
 --- @param file_name string
---- @return string
+--- @return string|nil
 function etcd_utils.get_sha256sums(version, file_name)
     local url = etcd_utils.RELEASE_URL .. version .. "/SHA256SUMS"
-    local body = fetch(url)
-    for line in string.gmatch(body, "[^\n]+") do
+    local unverified_ok = etcd_utils.allows_unverified(version)
+    local resp = fetch(url, unverified_ok and 404 or nil)
+    if resp.status_code == 404 then
+        return nil
+    end
+    for line in string.gmatch(resp.body, "[^\n]+") do
         local checksum, name = string.match(line, "^(%x+)%s+%*?(%S+)")
         if name == file_name then
             return checksum
         end
     end
+    if unverified_ok then
+        return nil
+    end
     error("no checksum for " .. file_name .. " in " .. url)
+end
+
+--- Reports whether version is older than UNVERIFIED_BEFORE, so that its archive may be installed without a
+--- checksum. A pre-release sorts before its release: 3.4.0-rc.1 is older than 3.4.0.
+--- @param version string a release number that passed is_valid_version
+--- @return boolean
+function etcd_utils.allows_unverified(version)
+    local function parts(value)
+        local major, minor, patch, rest = string.match(value, "^(%d+)%.(%d+)%.(%d+)(.*)$")
+        if major == nil then
+            return nil
+        end
+        return { tonumber(major), tonumber(minor), tonumber(patch), rest == "" and 1 or 0 }
+    end
+    local current = parts(version)
+    if current == nil then
+        return false
+    end
+    local limit = parts(etcd_utils.UNVERIFIED_BEFORE)
+    for i = 1, 4 do
+        if current[i] ~= limit[i] then
+            return current[i] < limit[i]
+        end
+    end
+    return false
+end
+
+--- Returns the warning that PreInstall prints before it installs an archive without a checksum.
+--- @param version string
+--- @param file_name string
+--- @return string
+function etcd_utils.unverified_warning(version, file_name)
+    return string.format(
+        "WARNING: etcd %s publishes no checksum for %s, so the archive is installed without a check. "
+            .. "The plugin allows this for releases before %s; install a release from %s on to have it verified.",
+        version,
+        file_name,
+        etcd_utils.UNVERIFIED_BEFORE,
+        etcd_utils.UNVERIFIED_BEFORE
+    )
 end
 
 --- Reports whether a file can be opened at path. The check is portable, unlike `[ -d ]`, which

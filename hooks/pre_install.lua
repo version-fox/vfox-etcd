@@ -39,6 +39,9 @@ function PLUGIN:PreInstall(ctx)
     local checksum = etcdUtils.get_sha256sums(etcd_version, file)
     local download_url = etcdUtils.RELEASE_URL .. etcd_version .. "/" .. file
     print("etcd download url: " .. download_url)
+    if checksum == nil then
+        print(etcdUtils.unverified_warning(etcd_version, file))
+    end
 
     return {
         version = etcd_version,

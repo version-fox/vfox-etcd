@@ -20,7 +20,7 @@
 ## 各钩子的作用
 
 - `Available` 列出 `assets/versions.txt` 中的版本。
-- `PreInstall` 检查版本，并从发布版本的 `SHA256SUMS` 中返回发布包的 URL 和 checksum。在 Linux 或 macOS 上设置 `BUILD_WITH_FAILPOINT=yes` 时，它不返回发布包，因此会改为从源码构建。
+- `PreInstall` 检查版本，并从发布版本的 `SHA256SUMS` 中返回发布包的 URL 和 checksum。早于 `3.4.0` 的发布版本可能没有该发布包的 checksum，此时会在带警告的情况下安装该发布包。在 Linux 或 macOS 上设置 `BUILD_WITH_FAILPOINT=yes` 时，它不返回发布包，因此会改为从源码构建。
 - `PostInstall` 在被要求时运行 failpoint 构建。
 - `EnvKeys` 把可执行文件放入 `PATH`。链接的系统安装位于 `bin/` 中，源码构建位于 `etcd/bin` 中，发布包则位于根目录。
 - `PreUse` 拒绝使用未安装的版本。
@@ -93,7 +93,7 @@ python3 -m http.server 8080 --directory /tmp/vfox-etcd-site
 
 ## 版本列表
 
-`assets/versions.txt` 由 `update_etcd_versions` 工作流每周一刷新。它通过 GitHub API 读取 etcd 的标签，只保留其发布版本的 `SHA256SUMS` 中列出了 linux-amd64 发布包的版本。当无法连接 GitHub，或 GitHub 返回的错误不是 404（404 表示该发布版本没有 `SHA256SUMS`）时，它会失败，且不会修改列表。若要手动刷新，请在 `assets` 目录中运行它，并在 `GITHUB_TOKEN` 中提供令牌：
+`assets/versions.txt` 由 `update_etcd_versions` 工作流每周一刷新。它通过 GitHub API 读取 etcd 的标签，并保留其 linux-amd64 发布包可以安装的版本：该发布版本的 `SHA256SUMS` 列出了此发布包，或者该版本早于 `UNVERIFIED_BEFORE`（在 `lib/etcd_utils.lua` 和 `assets/get_all_etcd_versions.py` 中均为 `3.4.0`）且该发布包可以下载。这些检查同时进行，最多 16 个。当无法连接 GitHub，或请求 `SHA256SUMS` 或发布包时返回的错误不是 404 时，它会失败，且不会修改列表；404 表示该发布版本不提供该文件。若要手动刷新，请在 `assets` 目录中运行它，并在 `GITHUB_TOKEN` 中提供令牌：
 
 ```bash
 cd assets && python3 -m pip install requests packaging && python3 get_all_etcd_versions.py
