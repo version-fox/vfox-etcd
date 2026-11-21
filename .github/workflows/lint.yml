@@ -1,0 +1,103 @@
+# Copyright 2026 version-fox and contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lua:
+    name: Lua format and diagnostics
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@v5
+      - name: Check Lua formatting
+        uses: JohnnyMorganz/stylua-action@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: v2.6.0
+          args: --check .
+      - name: Check Lua diagnostics
+        run: mise x aqua:LuaLS/lua-language-server@3.19.1 -- lua-language-server --check . --checklevel=Warning
+
+  workflows:
+    name: Workflow files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@v5
+      - name: Check workflow files
+        run: mise x aqua:rhysd/actionlint@1.7.12 -- actionlint
+
+  python:
+    name: Python format and lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@v5
+      - name: Check Python formatting
+        run: mise x aqua:astral-sh/ruff@0.17.6 -- ruff format --check .
+      - name: Check Python lint
+        run: mise x aqua:astral-sh/ruff@0.17.6 -- ruff check .
+
+  go:
+    name: Go format, vet and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.1"
+          cache: false
+      - name: Check gofmt
+        run: test -z "$(gofmt -l .)"
+        working-directory: tests/e2e
+      - name: Run go vet on every platform
+        run: |
+          go vet ./...
+          GOOS=windows go vet ./...
+          GOOS=darwin go vet ./...
+        working-directory: tests/e2e
+      - name: Run unit tests
+        run: go test -short ./...
+        working-directory: tests/e2e
+
+  docs:
+    name: Docs in English and Chinese
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Check that the Chinese pages match the English ones
+        run: python3 -I .github/scripts/check_docs_parity.py .
