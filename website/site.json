@@ -6,7 +6,7 @@
   "official_name": "etcd",
   "example_version": "3.5.5",
   "site_url": "https://version-fox.github.io/vfox-etcd",
-  "vfox_add_code": "vfox add --source https://github.com/version-fox/vfox-etcd/archive/refs/heads/main.zip etcd",
+  "vfox_add_code": "vfox add etcd",
   "vfox_install_code": "vfox install etcd@3.5.5",
   "vfox_run_code": "vfox exec etcd@3.5.5 -- etcd --version",
   "mise_prepare_code": "mise ls-remote vfox:version-fox/vfox-etcd",

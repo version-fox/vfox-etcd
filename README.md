@@ -20,12 +20,16 @@ An [etcd](https://etcd.io/) plugin for [vfox](https://vfox.dev/). It installs se
 After installing [vfox](https://github.com/version-fox/vfox), add the plugin, install a version and select it:
 
 ```bash
-vfox add --source https://github.com/version-fox/vfox-etcd/archive/refs/heads/main.zip etcd
+vfox add etcd
 vfox search etcd
 vfox install etcd@3.5.12
 vfox use -g etcd@3.5.12
 etcd --version
 ```
+
+`vfox add etcd` installs the latest release. To try `main`, a branch, or a change you are working on, see [install-from-source.md](docs/install-from-source.md).
+
+Some sections below describe the plugin on `main`: `vfox link --detect etcd`, and failpoint builds, which now build the version you ask for. The latest release does not have them until the next release, so install from source to use them.
 
 For `etcd` to be on the `PATH`, vfox has to be hooked into your shell, see its [quick start](https://vfox.dev/guides/quick-start.html). `vfox use -g` selects a version for every new shell, and `vfox use` only for the current one.
 
