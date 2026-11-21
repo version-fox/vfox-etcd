@@ -1,0 +1,97 @@
+# Copyright 2026 version-fox and contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: E2E
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # A new push to a pull request replaces the run before it. Every commit on main gets a
+  # group of its own, so a newer commit never cancels the run of an older one.
+  group: e2e-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# The suites live in tests/e2e: the Go tests install a pinned vfox, build the plugin
+# archive and drive vfox. This file only provisions the runner and Go.
+jobs:
+  e2e-ubuntu:
+    name: Native E2E on Ubuntu
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.1"
+          cache: false
+      - name: Run the Unix E2E suite
+        run: go test -v -timeout 85m ./unix
+        working-directory: tests/e2e
+
+  e2e-ubuntu-container:
+    name: Container E2E on Ubuntu
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.1"
+          cache: false
+      - name: Run the container E2E suite
+        run: go test -v -timeout 55m -run TestContainerE2E ./linux
+        working-directory: tests/e2e
+
+  e2e-windows:
+    name: Native E2E on Windows
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.1"
+          cache: false
+      - name: Run the Windows E2E suite
+        run: go test -v -timeout 85m ./windows
+        working-directory: tests/e2e
+
+  e2e-macos:
+    name: Native E2E on macOS
+    runs-on: macos-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.27.1"
+          cache: false
+      - name: Run the Unix E2E suite
+        run: go test -v -timeout 85m ./unix
+        working-directory: tests/e2e
