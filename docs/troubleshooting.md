@@ -1,0 +1,78 @@
+# Troubleshooting
+
+[中文](zh-CN/troubleshooting.md) | [English](troubleshooting.md)
+
+The messages below come from the plugin, or from vfox while it runs the plugin's hooks.
+
+## `invalid etcd version 3.5`
+
+The plugin needs a full release, such as `3.5.12`. Partial versions are refused, because they do not name one download:
+
+```bash
+vfox search etcd
+vfox install etcd@3.5.12
+```
+
+## `no checksum for etcd-v3.4.32-darwin-arm64.zip in ...`
+
+The release has no archive for your platform. The message names the archive the plugin wanted. Pick a release that has it, or read [platforms.md](platforms.md). For example, 3.4.32 has no Apple silicon archive, and the arm64 archive for macOS starts with 3.5.5.
+
+## `could not download https://...`
+
+The plugin could not reach GitHub, or GitHub answered with an error that is shown with its HTTP status. Check your network and any proxy settings, then run the command again. The version list comes from jsDelivr, so `vfox search etcd` can fail on the same network problem.
+
+## `BUILD_WITH_FAILPOINT is only supported on Linux and macOS`
+
+On Windows the variable is ignored and the official build is installed. Remove it from the environment to stop the notice. See [failpoint.md](failpoint.md) for what the Linux and macOS build needs.
+
+## `etcd build with failpoint failed, check the output above for details.`
+
+The output above the message shows the command that failed. The usual causes are a missing Git, Go or GNU Make, or a Go version that the etcd release does not accept. A failed build can leave a partial clone behind, so remove the version before you try again:
+
+```bash
+vfox uninstall etcd@3.5.12
+BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
+```
+
+The build is only complete when `etcd --version` prints `-FAILPOINTS` in its Git SHA.
+
+## etcd 3.5.12 is not installed, run `vfox install etcd@3.5.12` first
+
+`vfox use` was given a version that is not installed. Install it, or use `vfox search etcd` to find one.
+
+## `vfox link --detect` does nothing or is unknown
+
+Detection needs vfox 1.1.0 or later. Check with `vfox --version` and upgrade vfox. If no installation is found, see the list in [link.md](link.md): an etcd outside those places can still be linked by hand with `vfox link`.
+
+## `No rule to make target 'install-gofail'`
+
+The release has no gofail targets in its Makefile. Failpoint builds were tested with etcd 3.4.32 and 3.5.12, and the 3.6.0 release has no such targets. Use one of the tested releases for `BUILD_WITH_FAILPOINT=yes`, and see [failpoint.md](failpoint.md).
+
+## vfox requires hook support. Please ensure vfox is properly initialized with 'vfox activate'
+
+`vfox use` runs only after vfox is hooked into the shell. Activate it first, then select the version:
+
+```bash
+eval "$(vfox activate bash)"
+vfox use -g etcd@3.5.12
+```
+
+In PowerShell, use `Invoke-Expression "$(vfox activate pwsh)"` instead.
+
+## `etcd --version` shows a different version than the one selected
+
+Another etcd comes first on `PATH`. Check which one runs:
+
+```bash
+command -v etcd
+```
+
+Make sure vfox is activated in your shell (see its [quick start](https://vfox.dev/guides/quick-start.html)), then select the version again with `vfox use`.
+
+## `etcd` is not found in PowerShell
+
+Activate vfox in the profile, so it applies to every PowerShell session:
+
+```powershell
+Invoke-Expression "$(vfox activate pwsh)"
+```
