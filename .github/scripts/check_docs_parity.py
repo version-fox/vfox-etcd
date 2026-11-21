@@ -48,9 +48,12 @@ def page_pairs(root):
     return pairs
 
 
+INLINE_CODE = re.compile(r"`[^`\n]*`")
+
+
 def relative_links(text):
-    # Code blocks can hold anything that looks like a link, so they are skipped.
-    for target in LINK.findall(FENCE.sub("", text)):
+    # Code blocks and inline code can hold anything that looks like a link, so both are skipped.
+    for target in LINK.findall(INLINE_CODE.sub("", FENCE.sub("", text))):
         if SCHEME.match(target) or target.startswith("#"):
             continue
         yield target.split("#", 1)[0]
