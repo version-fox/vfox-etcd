@@ -4,7 +4,7 @@
 
 What changed in each release, as a user notices it. GitHub's release pages list the pull requests.
 
-## Unreleased
+## 0.2.2 (2026-11-22)
 
 - `vfox search etcd` reads the version list at the release tag of the plugin, so each release lists the versions it was released with. A stale copy of the list on the default branch no longer changes what a release shows. A refreshed list reaches users with the next release. See [versions.md](versions.md).
 - `BUILD_WITH_FAILPOINT=yes` builds etcd 3.6.0 with failpoints. The plugin runs `make gofail-enable` for a release that has that target, and 3.6.0 defines it in a makefile that the root one includes. A build whose binary has no gofail runtime is an error, not an install that looks complete. See [failpoint.md](failpoint.md).

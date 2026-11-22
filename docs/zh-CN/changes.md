@@ -4,7 +4,7 @@
 
 以下是每个发布版本中用户能够感知到的变化。GitHub 的发布页面列出了对应的拉取请求。
 
-## Unreleased
+## 0.2.2 (2026-11-22)
 
 - `vfox search etcd` 读取插件自身发布标签处的版本列表，因此每个发布版本列出的都是它发布时的版本。默认分支上陈旧的列表副本不再改变某个发布版本的显示结果。刷新后的列表随下一个发布版本到达用户。参见 [versions.md](versions.md)。
 - `BUILD_WITH_FAILPOINT=yes` 可以构建带 failpoint 的 etcd 3.6.0。对于有 `gofail-enable` 目标的发布版本，插件会运行 `make gofail-enable`（3.6.0 把该目标定义在被包含的 makefile 中）；若二进制文件中没有 gofail 运行时，构建会被视为错误，而不是显示为成功的安装。参见 [failpoint.md](failpoint.md)。
