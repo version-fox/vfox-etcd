@@ -12,10 +12,11 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
--- Available lists the versions in versions.txt, and fails loudly when the list cannot be downloaded.
+-- Available lists the versions in versions.txt at the release tag of the plugin, and fails loudly when the list cannot
+-- be downloaded.
 local test = require("vfox.test")
 
-local VERSIONS_URL = "https://fastly.jsdelivr.net/gh/version-fox/vfox-etcd@main/assets/versions.txt"
+local VERSIONS_URL
 local body = "3.8.0-alpha.0\n3.5.12\r\n\n3.4.32\nnot a version\n"
 local status = 200
 local failure = nil
@@ -32,6 +33,8 @@ local plugin = test.load({
         return { status_code = status, body = body, headers = {} }
     end,
 })
+-- The list of a release is the one at its tag, so the URL names the version of metadata.lua, not main.
+VERSIONS_URL = "https://fastly.jsdelivr.net/gh/version-fox/vfox-etcd@v" .. PLUGIN.version .. "/assets/versions.txt"
 
 local versions = plugin:Available({})
 local got = {}

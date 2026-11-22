@@ -37,6 +37,27 @@ The plugin could not reach GitHub, or GitHub answered with an error that is show
 
 On Windows the variable is ignored and the official build is installed. Remove it from the environment to stop the notice. See [failpoint.md](failpoint.md) for what the Linux and macOS build needs.
 
+## `BUILD_WITH_FAILPOINT is "1", but only yes turns on the failpoint build. Unset it to install the official build.`
+
+Only the exact value `yes` turns on the failpoint build. Set it to `yes`, or unset it to install the official build:
+
+```bash
+BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
+```
+
+## `the failpoint build needs git, go, make on PATH; not found: go`
+
+The failpoint build clones etcd, then runs Go and GNU Make, and one of those programs is not on `PATH` when `vfox install` runs. The install stops before anything is cloned. Install the missing program, or put the directory that holds it on `PATH`, and install again.
+
+## `etcd 3.6.0 was built without failpoints: ... does not link the gofail runtime. Uninstall the version and install it again.`
+
+The build finished, but its binary has no gofail runtime, so the plugin refuses the install rather than report a build with failpoints that has none. Remove the version, and install it again:
+
+```bash
+vfox uninstall etcd@3.6.0
+BUILD_WITH_FAILPOINT=yes vfox install etcd@3.6.0
+```
+
 ## `etcd build with failpoint failed, check the output above for details.`
 
 The output above the message shows the command that failed. The usual causes are a missing Git, Go or GNU Make, or a Go version that the etcd release does not accept. A failed build can leave a partial clone behind, so remove the version before you try again:
@@ -46,7 +67,7 @@ vfox uninstall etcd@3.5.12
 BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
 ```
 
-The build is only complete when `etcd --version` prints `-FAILPOINTS` in its Git SHA.
+The build is only complete when its binary links the gofail runtime, which the plugin checks. For 3.4 and 3.5, `etcd --version` also prints `-FAILPOINTS` in its Git SHA.
 
 ## etcd 3.5.12 is not installed, run `vfox install etcd@3.5.12` first
 
@@ -58,7 +79,7 @@ Detection needs vfox 1.1.0 or later. Check with `vfox --version` and upgrade vfo
 
 ## `No rule to make target 'install-gofail'`
 
-The release has no gofail targets in its Makefile. Failpoint builds were tested with etcd 3.4.32 and 3.5.12, and the 3.6.0 release has no such targets. Use one of the tested releases for `BUILD_WITH_FAILPOINT=yes`, and see [failpoint.md](failpoint.md).
+The release has no gofail targets in its Makefile. Failpoint builds were tested with etcd 3.4.32, 3.5.12 and 3.6.0. Use one of the tested releases for `BUILD_WITH_FAILPOINT=yes`, and see [failpoint.md](failpoint.md).
 
 ## vfox requires hook support. Please ensure vfox is properly initialized with 'vfox activate'
 

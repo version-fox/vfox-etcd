@@ -25,8 +25,18 @@ function PLUGIN:PreInstall(ctx)
     end
 
     -- Build etcd with failpoints from source: https://github.com/etcd-io/etcd/tree/main/tests/robustness#running-locally
-    if os.getenv("BUILD_WITH_FAILPOINT") == "yes" then
+    if etcdUtils.failpoint_requested(os.getenv("BUILD_WITH_FAILPOINT")) then
         if RUNTIME.osType ~= "windows" then
+            -- The build runs these programs, so a missing one stops the install before anything is cloned.
+            local missing = etcdUtils.missing_build_tools()
+            if #missing > 0 then
+                error(
+                    "the failpoint build needs "
+                        .. table.concat(etcdUtils.BUILD_TOOLS, ", ")
+                        .. " on PATH; not found: "
+                        .. table.concat(missing, ", ")
+                )
+            end
             -- PostInstall builds the source, so there is nothing to download.
             return {
                 version = etcd_version,

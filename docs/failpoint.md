@@ -8,7 +8,7 @@
 BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
 ```
 
-The plugin has been tested with etcd 3.4.32 and 3.5.12. The 3.6.0 release has no gofail targets in its Makefile, so a build of it stops with an error.
+The plugin has been tested with etcd 3.4.32, 3.5.12 and 3.6.0. Only the exact value `yes` turns the build on: any other value, such as `1`, stops the install with an error, and an unset or empty variable installs the official build.
 
 ## What the build does
 
@@ -19,14 +19,15 @@ git clone --depth 1 --branch v3.5.12 https://github.com/etcd-io/etcd.git etcd
 cd etcd
 export PATH="$(go env GOBIN | grep . || echo "$(go env GOPATH | cut -d: -f1)/bin"):$PATH"
 make install-gofail
+# where the release has a gofail-enable target, make gofail-enable runs instead
 FAILPOINTS=true make build
 ```
 
 The clone is the tag of the version you asked for. Plugin releases before 0.2.1 cloned the default branch, which built a different etcd than the one named.
 
-gofail has to be on the `PATH` before the make targets run. `go install` puts it in `GOBIN`, or else in the first entry of `GOPATH`, so the command adds that directory to the `PATH` first. The build then runs with `FAILPOINTS=true`, because etcd's build script enables the failpoints only when it is set. A build that has them reports `-FAILPOINTS` in its Git SHA, which `etcd --version` prints.
+gofail has to be on the `PATH` before the make targets run. `go install` puts it in `GOBIN`, or else in the first entry of `GOPATH`, so the command adds that directory to the `PATH` first. For 3.4 and 3.5 the build runs with `FAILPOINTS=true`, because etcd's build script enables the failpoints only when it is set. A 3.4 or 3.5 build with failpoints reports `-FAILPOINTS` in its Git SHA, which `etcd --version` prints. The 3.6 build does not add that suffix, so the plugin checks the binary instead: it must link the gofail runtime, or the install stops with an error.
 
-The 3.4 line has a `gofail-enable` target, which enables the failpoints itself. For those releases the plugin runs `make gofail-enable` in place of `make install-gofail`.
+Some releases have a `gofail-enable` target, which enables the failpoints itself: 3.4 has it in its root Makefile, and 3.6 in a makefile that the root one includes. For those releases the plugin runs `make gofail-enable` in place of `make install-gofail`, and it finds the target wherever it is defined.
 
 The binaries end up in `etcd/bin` inside the install directory, and the plugin puts that directory on the `PATH` when the version is selected.
 
@@ -37,7 +38,7 @@ The binaries end up in `etcd/bin` inside the install directory, and the plugin p
 - Go, at the version the etcd release asks for, on the `PATH` when `vfox install` runs.
 - GNU Make.
 
-A build takes several minutes. Its output is printed, so a failure shows the command that failed.
+The plugin checks for these programs before it clones etcd, and names any that is missing. A build takes several minutes. Its output is printed, so a failure shows the command that failed.
 
 ## Use it
 

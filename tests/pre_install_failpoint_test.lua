@@ -12,8 +12,16 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
--- With BUILD_WITH_FAILPOINT=yes on Linux, PreInstall returns no download: PostInstall builds the source.
+-- With BUILD_WITH_FAILPOINT=yes on Linux and the build tools on PATH, PreInstall returns no download: PostInstall
+-- builds the source.
+package.path = "./lib/?.lua;" .. package.path
 local test = require("vfox.test")
+local etcd_utils = require("etcd_utils")
+
+-- os.execute cannot run in a plugin test, so the tools are reported as present.
+etcd_utils.has_command = function()
+    return true
+end
 
 local requested = false
 local plugin = test.load({

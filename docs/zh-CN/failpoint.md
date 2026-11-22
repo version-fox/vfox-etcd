@@ -8,7 +8,7 @@
 BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
 ```
 
-插件已在 etcd 3.4.32 和 3.5.12 上测试过。3.6.0 发布版本的 Makefile 中没有 gofail 目标，因此对它的构建会因错误而中止。
+插件已在 etcd 3.4.32、3.5.12 和 3.6.0 上测试过。只有精确的值 `yes` 才会启用构建：其他任何值（例如 `1`）都会使安装因错误而中止，未设置或为空的变量则会安装官方构建版本。
 
 ## 构建会做什么
 
@@ -19,14 +19,15 @@ git clone --depth 1 --branch v3.5.12 https://github.com/etcd-io/etcd.git etcd
 cd etcd
 export PATH="$(go env GOBIN | grep . || echo "$(go env GOPATH | cut -d: -f1)/bin"):$PATH"
 make install-gofail
+# 若发布版本有 gofail-enable 目标，则改为运行 make gofail-enable
 FAILPOINTS=true make build
 ```
 
 克隆的是你所请求版本的标签。0.2.1 之前的插件版本克隆的是默认分支，因此构建出的 etcd 与所指定的版本不同。
 
-gofail 必须在 make 目标运行之前已位于 `PATH` 中。`go install` 会把它放入 `GOBIN`；若 `GOBIN` 为空，则放入 `GOPATH` 的第一个条目，因此命令会先把该目录加入 `PATH`。随后，构建会在 `FAILPOINTS=true` 的条件下运行，因为 etcd 的构建脚本只有在设置了该变量时才会启用 failpoint。带有 failpoint 的构建，其 Git SHA 中会包含 `-FAILPOINTS`，`etcd --version` 会将其打印出来。
+gofail 必须在 make 目标运行之前已位于 `PATH` 中。`go install` 会把它放入 `GOBIN`；若 `GOBIN` 为空，则放入 `GOPATH` 的第一个条目，因此命令会先把该目录加入 `PATH`。对于 3.4 和 3.5，构建会在 `FAILPOINTS=true` 的条件下运行，因为 etcd 的构建脚本只有在设置了该变量时才会启用 failpoint。3.4 或 3.5 的带 failpoint 构建，其 Git SHA 中会包含 `-FAILPOINTS`，`etcd --version` 会将其打印出来。3.6 的构建不会添加该后缀，因此插件改为检查二进制文件：它必须链接 gofail 运行时，否则安装会因错误而中止。
 
-3.4 系列有一个 `gofail-enable` 目标，它自身就会启用 failpoint。对于这些发布版本，插件会运行 `make gofail-enable`，代替 `make install-gofail`。
+部分发布版本有 `gofail-enable` 目标，它自身就会启用 failpoint：3.4 把它放在根 Makefile 中，3.6 则放在根 Makefile 所包含的 makefile 中。对于这些发布版本，插件会运行 `make gofail-enable`，代替 `make install-gofail`，并且无论该目标定义在哪里，插件都能找到它。
 
 二进制文件最终位于安装目录中的 `etcd/bin`，选定该版本时，插件会把该目录加入 `PATH`。
 
@@ -37,7 +38,7 @@ gofail 必须在 make 目标运行之前已位于 `PATH` 中。`go install` 会�
 - Go，版本须符合该 etcd 发布版本的要求，并且在运行 `vfox install` 时已位于 `PATH` 中。
 - GNU Make。
 
-一次构建需要几分钟。构建输出会被打印出来，因此失败时会显示失败的命令。
+插件会在克隆 etcd 之前检查上述程序，并指出缺少的程序。一次构建需要几分钟。构建输出会被打印出来，因此失败时会显示失败的命令。
 
 ## 使用方法
 

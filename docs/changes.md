@@ -4,6 +4,16 @@
 
 What changed in each release, as a user notices it. GitHub's release pages list the pull requests.
 
+## Unreleased
+
+- `vfox search etcd` reads the version list at the release tag of the plugin, so each release lists the versions it was released with. A stale copy of the list on the default branch no longer changes what a release shows. A refreshed list reaches users with the next release. See [versions.md](versions.md).
+- `BUILD_WITH_FAILPOINT=yes` builds etcd 3.6.0 with failpoints. The plugin runs `make gofail-enable` for a release that has that target, and 3.6.0 defines it in a makefile that the root one includes. A build whose binary has no gofail runtime is an error, not an install that looks complete. See [failpoint.md](failpoint.md).
+- `BUILD_WITH_FAILPOINT` accepts only `yes`. Another value, such as `1` or `true`, stops the install with a message. Before, it installed the official build without a word. An unset or empty variable, or `no`, still installs the official build.
+- The failpoint build checks for `git`, `go` and `make` before it clones etcd, and names the one that is missing.
+- The failpoint example on the website uses etcd 3.5.12, which the build is tested with. The example with 3.5.5 failed.
+- `vfox link --detect etcd` finds an etcd that prints its version as a tag, such as `v0.3.0` from release 0.3.0.
+- The English versions page says that an archive from a release before 3.4.0 is checked against the SHA-256 that the plugin pins, as the code does.
+
 ## 0.2.1 (2026-11-21)
 
 - `vfox link --detect etcd` finds the etcd installations that are already on the machine and links them, instead of downloading another copy. It needs vfox 1.1.0 or later. Each one is named after its version and where it was found, such as `3.5.12-system` or `3.5.12-brew`. See [link.md](link.md).

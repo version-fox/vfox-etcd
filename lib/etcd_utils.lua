@@ -21,8 +21,8 @@ local etcd_utils = {}
 etcd_utils.RELEASE_URL = "https://github.com/etcd-io/etcd/releases/download/v"
 --- The source of the failpoint build.
 etcd_utils.REPOSITORY_URL = "https://github.com/etcd-io/etcd.git"
---- The released versions, one per line. The update_etcd_versions workflow keeps the file current.
-etcd_utils.VERSIONS_URL = "https://fastly.jsdelivr.net/gh/version-fox/vfox-etcd@main/assets/versions.txt"
+--- The start of the URL of the released versions, one per line: see versions_url for the rest.
+etcd_utils.VERSIONS_URL_PREFIX = "https://fastly.jsdelivr.net/gh/version-fox/vfox-etcd@v"
 --- From this version on, every release lists its archives in SHA256SUMS, and an archive it does not list is refused.
 --- An older release may publish no SHA256SUMS, so its archives are checked against the SHA-256 values pinned in
 --- pinned_checksums.lua. Keep it in step with CHECKSUMS_FROM in assets/get_all_etcd_versions.py.
@@ -65,10 +65,24 @@ local function fetch(url, allowed_status)
     return resp
 end
 
---- Returns the released versions for `vfox search etcd`.
+--- Returns the URL of assets/versions.txt at the release tag of plugin_version. A tag does not move, so every
+--- release lists the versions it was released with. The default branch is not read: jsDelivr can serve an old copy
+--- of it, and two hosts can disagree. The update_etcd_versions workflow refreshes the file on the default branch, and
+--- a release carries that refreshed list once it is tagged.
+--- @param plugin_version string the plugin version from metadata.lua, such as 0.2.1
+--- @return string
+function etcd_utils.versions_url(plugin_version)
+    if type(plugin_version) ~= "string" or string.match(plugin_version, "^%d+%.%d+%.%d+$") == nil then
+        error("invalid plugin version " .. tostring(plugin_version) .. ", expected a release such as 0.2.1")
+    end
+    return etcd_utils.VERSIONS_URL_PREFIX .. plugin_version .. "/assets/versions.txt"
+end
+
+--- Returns the released versions for `vfox search etcd`, as the release tag of plugin_version lists them.
+--- @param plugin_version string
 --- @return table
-function etcd_utils.get_release_versions()
-    local body = fetch(etcd_utils.VERSIONS_URL).body
+function etcd_utils.get_release_versions(plugin_version)
+    local body = fetch(etcd_utils.versions_url(plugin_version)).body
     local result = {}
     for line in string.gmatch(body, "[^\n]+") do
         local version = etcd_utils.trim(line)
@@ -183,11 +197,15 @@ function etcd_utils.file_exists(path)
     return true
 end
 
---- Returns the version printed by `etcd --version`, or nil when the output has none.
+--- Returns the version printed by `etcd --version`, or nil when the output has none. Release 0.3.0 prints only its
+--- tag, such as v0.3.0, and no "etcd Version:" line.
 --- @param output string
 --- @return string|nil
 function etcd_utils.parse_version(output)
     local version = string.match(output, "etcd Version:%s*(%S+)")
+    if version == nil then
+        version = string.match(output, "^%s*v(%d+%.%d+%.%d+[%w%.%-]*)%s*$")
+    end
     if version ~= nil and etcd_utils.is_valid_version(version) then
         return version
     end
@@ -224,9 +242,11 @@ end
 ---
 --- gofail has to be on PATH before the make targets run, because they look for it there. `go install`
 --- puts gofail in GOBIN, or else in the first GOPATH entry, so the command adds that directory to PATH
---- first. The 3.4 line has a `gofail-enable` target, which enables the failpoints itself. Later lines have
---- none, so the command installs gofail and lets the build enable the failpoints: the build needs
---- FAILPOINTS=true for that, or etcd's build script switches them off again.
+--- first. Some lines have a `gofail-enable` target, which enables the failpoints itself: 3.4 has it in the root
+--- Makefile, 3.6 in the makefile that the root Makefile includes. Others, such as 3.5, have none, so the command
+--- installs gofail and lets the build enable the failpoints. `make -q` finds the target wherever it is defined: it
+--- exits 2 when there is no such target, and 0 or 1 when there is. For 3.4 and 3.5 the build also needs
+--- FAILPOINTS=true, or etcd's build script switches the failpoints off again.
 --- @param path string the vfox install directory
 --- @param version string
 --- @return string
@@ -243,8 +263,68 @@ function etcd_utils.failpoint_build_command(path, version)
         .. " etcd"
         .. " && cd etcd"
         .. ' && export PATH="$(go env GOBIN | grep . || echo "$(go env GOPATH | cut -d: -f1)/bin"):$PATH"'
-        .. " && if grep -q '^gofail-enable:' Makefile; then make gofail-enable; else make install-gofail; fi"
+        .. " && if make -q gofail-enable >/dev/null 2>&1 || [ $? -eq 1 ]; then make gofail-enable; else make install-gofail; fi"
         .. " && FAILPOINTS=true make build"
+end
+
+--- The programs a failpoint build runs. They have to be on PATH before the plugin clones etcd.
+etcd_utils.BUILD_TOOLS = { "git", "go", "make" }
+
+--- Reports whether name can be run from PATH. `command -v` is a builtin of the POSIX shells that the failpoint
+--- build runs in, so the check is for Linux and macOS.
+--- @param name string
+--- @return boolean
+function etcd_utils.has_command(name)
+    return os.execute("command -v " .. name .. " >/dev/null 2>&1") == 0
+end
+
+--- Returns the BUILD_TOOLS that are not on PATH, in their order.
+--- @return table
+function etcd_utils.missing_build_tools()
+    local missing = {}
+    for _, name in ipairs(etcd_utils.BUILD_TOOLS) do
+        if not etcd_utils.has_command(name) then
+            table.insert(missing, name)
+        end
+    end
+    return missing
+end
+
+--- Reports whether the value of BUILD_WITH_FAILPOINT asks for the failpoint build. Only "yes" does. Unset, empty and
+--- "no" ask for the official build. Any other value stops the install, so that "1" or "true" cannot install the
+--- official build without a word.
+--- @param value string|nil the value of BUILD_WITH_FAILPOINT
+--- @return boolean
+function etcd_utils.failpoint_requested(value)
+    if value == nil or value == "" or value == "no" then
+        return false
+    end
+    if value == "yes" then
+        return true
+    end
+    error(
+        'BUILD_WITH_FAILPOINT is "'
+            .. value
+            .. '", but only yes turns on the failpoint build. Unset it to install the official build.'
+    )
+end
+
+--- The gofail runtime package. The code that a failpoint build instruments imports it, and a build without
+--- failpoints does not link it.
+local GOFAIL_RUNTIME = "go.etcd.io/gofail/runtime"
+
+--- Reports whether the binary at path links the gofail runtime, which only a build with failpoints does. The file is
+--- read rather than run, so the check is the same for every release line, whatever its Git SHA shows.
+--- @param path string
+--- @return boolean
+function etcd_utils.has_failpoints(path)
+    local file = io.open(path, "rb")
+    if file == nil then
+        return false
+    end
+    local content = file:read("*a") or ""
+    file:close()
+    return string.find(content, GOFAIL_RUNTIME, 1, true) ~= nil
 end
 
 return etcd_utils
