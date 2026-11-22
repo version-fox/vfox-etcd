@@ -94,6 +94,24 @@ for _, version in ipairs({ "3.4.0", "3.4.1", "3.5.0-alpha.0", "3.5.12" }) do
 end
 assert(string.find(etcd_utils.pinned_notice("3.3.13", "etcd-v3.3.13-linux-amd64.tar.gz"), "pinned", 1, true))
 
+-- A failpoint build runs a gofail target, which a Makefile defines at the start of a line. A prerequisite,
+-- and a line of a recipe, define none.
+assert(etcd_utils.makefile_defines_gofail_target("install-gofail:\n\tgo install go.etcd.io/gofail\n"))
+assert(etcd_utils.makefile_defines_gofail_target("gofail-enable: install-gofail\n\tPASSES=toggle\n"))
+assert(not etcd_utils.makefile_defines_gofail_target("build:\n\tgo build\n"))
+assert(not etcd_utils.makefile_defines_gofail_target("build:\n\tmake install-gofail\n"))
+assert(not etcd_utils.makefile_defines_gofail_target(".PHONY: install-gofail\n"))
+assert(not etcd_utils.makefile_defines_gofail_target("FAILPOINTS ?= false\n"))
+
+-- The includes of a Makefile, in order, with the repository root that etcd's includes start with removed.
+local includes =
+    etcd_utils.makefile_includes("include $(REPOSITORY_ROOT)/tests/robustness/Makefile\n-include local.mk\n")
+assert(
+    #includes == 2 and includes[1] == "tests/robustness/Makefile" and includes[2] == "local.mk",
+    table.concat(includes, ",")
+)
+assert(#etcd_utils.makefile_includes("build:\n\tgo build\n") == 0)
+
 -- The version list is read from the release tag of the plugin, never from the default branch.
 assert(
     etcd_utils.versions_url("0.2.1")

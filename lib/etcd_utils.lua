@@ -19,6 +19,10 @@ local etcd_utils = {}
 
 --- Release archives and their SHA256SUMS are published on GitHub, one directory per tag.
 etcd_utils.RELEASE_URL = "https://github.com/etcd-io/etcd/releases/download/v"
+--- The page of each release on GitHub. It answers 404 for a tag that has no release.
+etcd_utils.RELEASE_PAGE_URL = "https://github.com/etcd-io/etcd/releases/tag/v"
+--- The Makefile of each release, read at its tag. A tag does not move, so this is the Makefile that the clone gets.
+etcd_utils.MAKEFILE_URL_PREFIX = "https://raw.githubusercontent.com/etcd-io/etcd/v"
 --- The source of the failpoint build.
 etcd_utils.REPOSITORY_URL = "https://github.com/etcd-io/etcd.git"
 --- The start of the URL of the released versions, one per line: see versions_url for the rest.
@@ -142,6 +146,21 @@ local function pinned_checksum(version, file_name, url)
         error("no checksum for " .. file_name .. " in " .. url .. ", and none is pinned for it in this plugin")
     end
     return checksum
+end
+
+--- Stops with a message when GitHub has no release named version. The release page answers 404 for a tag without a
+--- release. PreInstall reads it before any archive, checksum or clone, so the message names the release rather than a
+--- file that is missing. The API is not used, because it limits anonymous requests.
+--- @param version string
+function etcd_utils.require_release(version)
+    local resp = fetch(etcd_utils.RELEASE_PAGE_URL .. version, 404)
+    if resp.status_code == 404 then
+        error(
+            "there is no etcd release "
+                .. version
+                .. ", see https://github.com/etcd-io/etcd/releases for the releases that exist"
+        )
+    end
 end
 
 --- Returns the SHA-256 for file_name of version, and where it comes from: "published" when the release's SHA256SUMS
@@ -307,6 +326,63 @@ function etcd_utils.failpoint_requested(value)
             .. value
             .. '", but only yes turns on the failpoint build. Unset it to install the official build.'
     )
+end
+
+--- How many levels of Makefiles are read for a gofail target: the Makefile at the tag is level 1, and the files it
+--- includes are the levels after it.
+local MAKEFILE_DEPTH = 3
+
+--- Reports whether a Makefile defines a gofail target, which the failpoint build runs: install-gofail, or gofail-enable
+--- in the releases that have it. A definition starts a line, so a prerequisite or a line of a recipe does not count.
+--- @param text string the Makefile
+--- @return boolean
+function etcd_utils.makefile_defines_gofail_target(text)
+    local lines = "\n" .. text
+    return string.find(lines, "\ninstall%-gofail[ \t]*:") ~= nil or string.find(lines, "\ngofail%-enable[ \t]*:") ~= nil
+end
+
+--- Returns the files that a Makefile includes, in order. The $(REPOSITORY_ROOT)/ that etcd's includes start with is
+--- removed, so the path is the one in the repository. A path that still holds a variable is returned as it is.
+--- @param text string the Makefile
+--- @return table
+function etcd_utils.makefile_includes(text)
+    local result = {}
+    for list in string.gmatch("\n" .. text, "\n%-?include[ \t]+([^\n]*)") do
+        for path in string.gmatch(list, "%S+") do
+            table.insert(result, (string.gsub(path, "%$%(REPOSITORY_ROOT%)/", "")))
+        end
+    end
+    return result
+end
+
+--- Reports whether the failpoint build of version can run a gofail target. It reads the Makefile at the tag of version,
+--- then the files that it includes, up to MAKEFILE_DEPTH levels. A Makefile that is not at the tag has no target. An
+--- include that still holds a variable cannot be read here, so it is taken as a target, and the build decides.
+--- @param version string a release number that passed is_valid_version
+--- @return boolean
+function etcd_utils.has_failpoint_target(version)
+    local function defines(path, depth)
+        local resp = fetch(etcd_utils.MAKEFILE_URL_PREFIX .. version .. "/" .. path, 404)
+        if resp.status_code == 404 then
+            return false
+        end
+        if etcd_utils.makefile_defines_gofail_target(resp.body) then
+            return true
+        end
+        if depth >= MAKEFILE_DEPTH then
+            return false
+        end
+        for _, included in ipairs(etcd_utils.makefile_includes(resp.body)) do
+            if string.find(included, "$", 1, true) ~= nil then
+                return true
+            end
+            if defines(included, depth + 1) then
+                return true
+            end
+        end
+        return false
+    end
+    return defines("Makefile", 1)
 end
 
 --- The gofail runtime package. The code that a failpoint build instruments imports it, and a build without

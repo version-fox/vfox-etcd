@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -160,15 +161,25 @@ exec etcd --name e2e --data-dir %s \
 		_ = command.Wait()
 	}()
 
+	// etcd registers its failpoints while it starts, and gofail answers before that is done, so a list read early can
+	// lack some of them. Every failpoint is registered once the client port reports healthy, so the list is read only
+	// after that, and the check passes only when the list holds afterCommit.
+	const clientHealth = "http://127.0.0.1:23790/health"
 	deadline := time.Now().Add(90 * time.Second)
+	var last string
 	for {
-		body, err := fetch(endpoint)
-		if err == nil {
-			common.RequireContains(t, body, "afterCommit", "failpoints of the etcd build")
-			return
+		health, healthErr := fetch(clientHealth)
+		if healthErr == nil && strings.Contains(health, `"health":"true"`) {
+			body, bodyErr := fetch(endpoint)
+			if bodyErr == nil && strings.Contains(body, "afterCommit") {
+				return
+			}
+			last = fmt.Sprintf("the failpoint list after etcd reported healthy was %q (%v)", body, bodyErr)
+		} else {
+			last = fmt.Sprintf("the health check answered %q (%v)", health, healthErr)
 		}
 		if time.Now().After(deadline) {
-			t.Fatalf("etcd did not serve the failpoint endpoint: %v\n--- etcd output ---\n%s", err, log.String())
+			t.Fatalf("etcd did not list its failpoints within 90s: %s\n--- etcd output ---\n%s", last, log.String())
 		}
 		time.Sleep(time.Second)
 	}

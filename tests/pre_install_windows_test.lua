@@ -23,6 +23,9 @@ local plugin = test.load({
     arch = "amd64",
     env = {},
     http = function(request)
+        if request.url == "https://github.com/etcd-io/etcd/releases/tag/v3.5.12" then
+            return { status_code = 200, body = "", headers = {} }
+        end
         if request.url == "https://github.com/etcd-io/etcd/releases/download/v3.5.12/SHA256SUMS" then
             return { status_code = 200, body = CHECKSUM .. "  " .. ARCHIVE .. "\n", headers = {} }
         end

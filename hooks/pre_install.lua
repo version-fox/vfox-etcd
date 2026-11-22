@@ -37,6 +37,18 @@ function PLUGIN:PreInstall(ctx)
                         .. table.concat(missing, ", ")
                 )
             end
+            etcdUtils.require_release(etcd_version)
+            -- Make stops after the clone when the release has no gofail target, so the Makefile at its tag is read
+            -- before the clone, and a release without a target is refused.
+            if not etcdUtils.has_failpoint_target(etcd_version) then
+                error(
+                    "etcd "
+                        .. etcd_version
+                        .. " has no failpoint build: its Makefile has no gofail target, so the build cannot run it. "
+                        .. "Pick a release that has one, such as 3.5.12, "
+                        .. "or unset BUILD_WITH_FAILPOINT to install the official build."
+                )
+            end
             -- PostInstall builds the source, so there is nothing to download.
             return {
                 version = etcd_version,
@@ -44,6 +56,8 @@ function PLUGIN:PreInstall(ctx)
         end
         print("BUILD_WITH_FAILPOINT is only supported on Linux and macOS, installing the official Windows build.")
     end
+
+    etcdUtils.require_release(etcd_version)
 
     local file = etcdUtils.archive_name(etcd_version, RUNTIME.osType, RUNTIME.archType)
     local checksum, source = etcdUtils.get_sha256sums(etcd_version, file)

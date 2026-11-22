@@ -4,6 +4,11 @@
 
 以下是每个发布版本中用户能够感知到的变化。GitHub 的发布页面列出了对应的拉取请求。
 
+## Unreleased
+
+- 当 GitHub 上没有该名称的发布版本时，`vfox install etcd@9.9.9` 会以 `there is no etcd release 9.9.9` 停止，并且在下载任何内容之前结束。此前安装会因为该发布版本的 `SHA256SUMS` 返回 HTTP 404 而失败。参见 [troubleshooting.md](troubleshooting.md)。
+- `BUILD_WITH_FAILPOINT=yes` 会在克隆 etcd 之前读取该发布版本的 Makefile；若其中没有 gofail 目标（例如 3.5.5），则拒绝该发布版本，并在消息中写明它的名称。此前会先克隆，再以原始的 `make` 错误结束安装。参见 [failpoint.md](failpoint.md)。
+
 ## 0.2.2 (2026-11-22)
 
 - `vfox search etcd` 读取插件自身发布标签处的版本列表，因此每个发布版本列出的都是它发布时的版本。默认分支上陈旧的列表副本不再改变某个发布版本的显示结果。刷新后的列表随下一个发布版本到达用户。参见 [versions.md](versions.md)。
