@@ -29,8 +29,6 @@ etcd --version
 
 `vfox add etcd` 会安装最新的发布版本。若要试用 `main`、某个分支，或你正在开发的改动，请参阅 [docs/zh-CN/install-from-source.md](docs/zh-CN/install-from-source.md)。
 
-下文的部分章节描述的是 `main` 分支上的插件：`vfox link --detect etcd`，以及 failpoint 构建（它现在会构建你指定的版本）。最新的发布版本要到下一次发布才会包含这些内容，因此若要使用，请从源码安装。
-
 要让 `etcd` 位于 `PATH` 中，需要将 vfox 接入你的 shell，参见其[快速开始](https://vfox.dev/guides/quick-start.html)。`vfox use -g` 会为之后打开的每个新 shell 选择版本，`vfox use` 则只对当前 shell 生效。
 
 版本及其选择方法，参见 [docs/zh-CN/versions.md](docs/zh-CN/versions.md)。支持的平台参见 [docs/zh-CN/platforms.md](docs/zh-CN/platforms.md)。

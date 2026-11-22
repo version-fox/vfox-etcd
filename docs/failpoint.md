@@ -22,7 +22,7 @@ make install-gofail
 FAILPOINTS=true make build
 ```
 
-The clone is the tag of the version you asked for. Earlier releases of this plugin cloned the default branch, which built a different etcd than the one named.
+The clone is the tag of the version you asked for. Plugin releases before 0.2.1 cloned the default branch, which built a different etcd than the one named.
 
 gofail has to be on the `PATH` before the make targets run. `go install` puts it in `GOBIN`, or else in the first entry of `GOPATH`, so the command adds that directory to the `PATH` first. The build then runs with `FAILPOINTS=true`, because etcd's build script enables the failpoints only when it is set. A build that has them reports `-FAILPOINTS` in its Git SHA, which `etcd --version` prints.
 

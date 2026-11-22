@@ -4,7 +4,7 @@
 
 What changed in each release, as a user notices it. GitHub's release pages list the pull requests.
 
-## Unreleased
+## 0.2.1 (2026-11-21)
 
 - `vfox link --detect etcd` finds the etcd installations that are already on the machine and links them, instead of downloading another copy. It needs vfox 1.1.0 or later. Each one is named after its version and where it was found, such as `3.5.12-system` or `3.5.12-brew`. See [link.md](link.md).
 - `BUILD_WITH_FAILPOINT=yes` builds the release tag of the version you install, not the default branch. Earlier releases cloned the default branch, so `vfox install etcd@3.4.32` built a different etcd from the one named. The build puts gofail on `PATH` and sets `FAILPOINTS=true`, without which the binary has no failpoints. It is tested with etcd 3.4.32 and 3.5.12, and etcd 3.6.0 stops with an error. See [failpoint.md](failpoint.md).
