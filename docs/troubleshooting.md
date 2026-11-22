@@ -15,7 +15,7 @@ vfox install etcd@3.5.12
 
 ## `there is no etcd release 9.9.9, see https://github.com/etcd-io/etcd/releases for the releases that exist`
 
-The version is a full release number, but GitHub has no etcd release with that name. The plugin stops before it downloads anything. Check the spelling, and pick a release from the list:
+The version is a full release number, but GitHub has no etcd release with that name. The plugin stops before it downloads an archive, a checksum or the source. Check the spelling, and pick a release from the list:
 
 ```bash
 vfox search etcd
@@ -44,9 +44,9 @@ The release has no archive for that platform, or it is not in the version list, 
 
 The plugin could not reach GitHub, or GitHub answered with an error that is shown with its HTTP status. Check your network and any proxy settings, then run the command again. The version list comes from jsDelivr, so `vfox search etcd` can fail on the same network problem.
 
-## `BUILD_WITH_FAILPOINT is only supported on Linux and macOS`
+## `BUILD_WITH_FAILPOINT is only supported on Linux and macOS, installing the official Windows build.`
 
-On Windows the variable is ignored and the official build is installed. Remove it from the environment to stop the notice. See [failpoint.md](failpoint.md) for what the Linux and macOS build needs.
+On Windows the official build is installed, and the plugin prints this notice. Remove the variable from the environment to stop the notice. See [failpoint.md](failpoint.md) for what the Linux and macOS build needs.
 
 ## `BUILD_WITH_FAILPOINT is "1", but only yes turns on the failpoint build. Unset it to install the official build.`
 

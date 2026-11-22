@@ -18,7 +18,7 @@ A linked version is a symlink to the installation. Nothing is copied, the instal
 
 ## Where it looks
 
-The plugin checks every directory on `PATH` first, then the usual places for each system. A directory counts when it holds an `etcd` binary (`etcd.exe` on Windows) that prints `etcd Version: <version>`.
+The plugin checks every directory on `PATH` first, then the usual places for each system. A directory counts when it holds an `etcd` binary (`etcd.exe` on Windows) that prints its version for `--version`, such as `etcd Version: 3.5.12` or the tag `v0.3.0`.
 
 | Source | Where the plugin looks | Name suffix |
 | --- | --- | --- |
@@ -44,7 +44,7 @@ The name is `<version>-<source>`, such as `3.5.12-system` or `3.8.0-alpha.0-brew
 vfox use -g etcd@3.5.12-system
 ```
 
-If two installations would get the same name, the first one found wins, and `PATH` comes before the fixed directories. Two installations of the same version from different locations therefore get different names.
+If two installations would get the same name, the first one found wins, and `PATH` comes before the fixed directories. An installation from a different source gets a different name: the same version under `/usr/bin` and under `/usr/local/bin` gets `3.5.12-system` and `3.5.12-local`. Two copies from the same source, such as two directories on `PATH`, both get `3.5.12-path`, and only the first is listed.
 
 ## What is left out
 
