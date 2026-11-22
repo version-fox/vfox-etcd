@@ -12,8 +12,8 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
--- With BUILD_WITH_FAILPOINT=yes on Linux and the build tools on PATH, PreInstall returns no download: PostInstall
--- builds the source.
+-- With BUILD_WITH_FAILPOINT=yes on Linux and the build tools on PATH, PreInstall returns no archive: PostInstall builds
+-- the source. The release page is read first, to check that the release exists.
 package.path = "./lib/?.lua;" .. package.path
 local test = require("vfox.test")
 local etcd_utils = require("etcd_utils")
@@ -23,13 +23,20 @@ etcd_utils.has_command = function()
     return true
 end
 
-local requested = false
+local downloaded = false
+local requests = {}
 local plugin = test.load({
     os = "linux",
     arch = "amd64",
     env = { BUILD_WITH_FAILPOINT = "yes" },
     http = function(request)
-        requested = true
+        table.insert(requests, request.url)
+        if string.find(request.url, "/releases/download/", 1, true) then
+            downloaded = true
+        end
+        if request.url == "https://github.com/etcd-io/etcd/releases/tag/v3.4.32" then
+            return { status_code = 200, body = "", headers = {} }
+        end
         return { status_code = 404, body = "", headers = {} }
     end,
 })
@@ -37,4 +44,5 @@ local plugin = test.load({
 local info = plugin:PreInstall({ version = "3.4.32" })
 assert(info.version == "3.4.32", tostring(info.version))
 assert((info.url or "") == "" and (info.sha256 or "") == "", "a failpoint build has no archive")
-assert(not requested, "a failpoint build does not download SHA256SUMS")
+assert(not downloaded, "a failpoint build downloads no archive and no SHA256SUMS")
+assert(#requests == 1, table.concat(requests, " "))

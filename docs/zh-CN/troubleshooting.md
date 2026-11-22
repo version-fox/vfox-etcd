@@ -13,6 +13,17 @@ vfox search etcd
 vfox install etcd@3.5.12
 ```
 
+## `there is no etcd release 9.9.9, see https://github.com/etcd-io/etcd/releases for the releases that exist`
+
+该版本号是完整的发布版本号，但 GitHub 上没有这个名称的 etcd 发布版本。插件会在下载任何内容之前停止。请检查拼写，并从列表中选择一个发布版本：
+
+```bash
+vfox search etcd
+vfox install etcd@3.5.12
+```
+
+GitHub 上已发布、但 `vfox search etcd` 尚未列出的发布版本，仍然可以通过完整名称安装。
+
 ## `no checksum for etcd-v3.4.32-darwin-arm64.zip in ...`
 
 该发布版本没有适用于你所在平台的发布包。消息中会写明插件所需的那个发布包。请选择包含该发布包的发布版本，或阅读 [platforms.md](platforms.md)。例如，3.4.32 没有适用于 Apple 芯片的发布包，而 macOS 的 arm64 发布包从 3.5.5 开始提供。
@@ -77,9 +88,17 @@ BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
 
 检测功能需要 vfox 1.1.0 或更高版本。请使用 `vfox --version` 检查版本，并升级 vfox。如果没有找到任何安装，请参阅 [link.md](link.md) 中的列表：不在这些位置的 etcd 仍然可以通过 `vfox link` 手动链接。
 
+## `etcd 3.5.5 has no failpoint build: its Makefile has no gofail target. The failpoint build starts at etcd 3.5.12. Unset BUILD_WITH_FAILPOINT to install the official build.`
+
+该发布版本的 Makefile 中没有 gofail 目标，因此无法运行 failpoint 构建。安装会在克隆任何内容之前停止。请构建消息中指定的发布版本，或取消设置该变量以安装官方构建版本：
+
+```bash
+BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
+```
+
 ## `No rule to make target 'install-gofail'`
 
-该发布版本的 Makefile 中没有 gofail 目标。failpoint 构建已在 etcd 3.4.32、3.5.12 和 3.6.0 上测试过。使用 `BUILD_WITH_FAILPOINT=yes` 时，请选择经过测试的发布版本之一，并参阅 [failpoint.md](failpoint.md)。
+该发布版本的 Makefile 中没有 gofail 目标，而插件在克隆之前没有拒绝它。插件只会拒绝它已知没有该目标的发布版本，参见上一节。failpoint 构建已在 etcd 3.4.32、3.5.12 和 3.6.0 上测试过。使用 `BUILD_WITH_FAILPOINT=yes` 时，请选择其中一个经过测试的发布版本，并参阅 [failpoint.md](failpoint.md)。
 
 ## vfox requires hook support. Please ensure vfox is properly initialized with 'vfox activate'
 

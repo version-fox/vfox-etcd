@@ -28,6 +28,10 @@ local plugin = test.load({
     arch = "amd64",
     env = {},
     http = function(request)
+        -- Every release used here exists, so its release page answers 200.
+        if string.find(request.url, "/releases/tag/v", 1, true) then
+            return { status_code = 200, body = "", headers = {} }
+        end
         return answers[request.url] or { status_code = 404, body = "", headers = {} }
     end,
 })

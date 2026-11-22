@@ -16,6 +16,7 @@
 local test = require("vfox.test")
 
 local SHA256SUMS_URL = "https://github.com/etcd-io/etcd/releases/download/v3.5.12/SHA256SUMS"
+local RELEASE_PAGE = "https://github.com/etcd-io/etcd/releases/tag/v3.5.12"
 local ARCHIVE = "etcd-v3.5.12-linux-amd64.tar.gz"
 local CHECKSUM = "1111111111111111111111111111111111111111111111111111111111111111"
 
@@ -36,6 +37,9 @@ local plugin = test.load({
         table.insert(requests, request.url)
         if request.url == SHA256SUMS_URL then
             return { status_code = status, body = sums, headers = {} }
+        end
+        if request.url == RELEASE_PAGE then
+            return { status_code = 200, body = "", headers = {} }
         end
         return { status_code = 404, body = "", headers = {} }
     end,
@@ -76,3 +80,14 @@ ok, err = pcall(function()
 end)
 assert(not ok and string.find(tostring(err), "invalid etcd version", 1, true), tostring(err))
 assert(#requests == 0, "no request for an invalid version")
+
+-- A release that does not exist stops before its SHA256SUMS is downloaded, and the message names the release.
+requests = {}
+ok, err = pcall(function()
+    return plugin:PreInstall({ version = "9.9.9" })
+end)
+assert(not ok and string.find(tostring(err), "there is no etcd release 9.9.9", 1, true), tostring(err))
+assert(
+    #requests == 1 and requests[1] == "https://github.com/etcd-io/etcd/releases/tag/v9.9.9",
+    table.concat(requests, " ")
+)

@@ -19,6 +19,8 @@ local etcd_utils = {}
 
 --- Release archives and their SHA256SUMS are published on GitHub, one directory per tag.
 etcd_utils.RELEASE_URL = "https://github.com/etcd-io/etcd/releases/download/v"
+--- The page of each release on GitHub. It answers 404 for a tag that has no release.
+etcd_utils.RELEASE_PAGE_URL = "https://github.com/etcd-io/etcd/releases/tag/v"
 --- The source of the failpoint build.
 etcd_utils.REPOSITORY_URL = "https://github.com/etcd-io/etcd.git"
 --- The start of the URL of the released versions, one per line: see versions_url for the rest.
@@ -104,29 +106,44 @@ function etcd_utils.archive_name(version, os_type, arch_type)
     return "etcd-v" .. version .. "-" .. string.lower(os_type) .. "-" .. string.lower(arch_type) .. extension
 end
 
+--- Reports whether version sorts before limit, where both are release numbers such as 3.5.12 or 3.6.0-rc.0. A
+--- pre-release sorts before its release, so 3.4.0-rc.1 is before 3.4.0. Two pre-releases of one release sort by their
+--- names, which orders alpha, beta and rc, so 3.6.0-alpha.0 is before 3.6.0-rc.0.
+--- @param version string a release number that passed is_valid_version
+--- @param limit string
+--- @return boolean
+function etcd_utils.is_before(version, limit)
+    local function parts(value)
+        local major, minor, patch, rest = string.match(value, "^(%d+)%.(%d+)%.(%d+)(.*)$")
+        if major == nil then
+            return nil, nil
+        end
+        -- The name of the pre-release without its hyphen, such as rc.0. It is empty for a release.
+        return { tonumber(major), tonumber(minor), tonumber(patch) }, string.match(rest, "^%-?(.*)$")
+    end
+    local current, current_name = parts(version)
+    local bound, bound_name = parts(limit)
+    if current == nil or bound == nil then
+        return false
+    end
+    for i = 1, 3 do
+        if current[i] ~= bound[i] then
+            return current[i] < bound[i]
+        end
+    end
+    if current_name == "" or bound_name == "" then
+        -- A release is not before its own pre-release, and a pre-release is before its release.
+        return current_name ~= "" and bound_name == ""
+    end
+    return current_name < bound_name
+end
+
 --- Reports whether version is older than CHECKSUMS_FROM. A pre-release sorts before its release, so 3.4.0-rc.1 is
 --- older than 3.4.0.
 --- @param version string a release number that passed is_valid_version
 --- @return boolean
 function etcd_utils.is_before_checksums(version)
-    local function parts(value)
-        local major, minor, patch, rest = string.match(value, "^(%d+)%.(%d+)%.(%d+)(.*)$")
-        if major == nil then
-            return nil
-        end
-        return { tonumber(major), tonumber(minor), tonumber(patch), rest == "" and 1 or 0 }
-    end
-    local current = parts(version)
-    local limit = parts(etcd_utils.CHECKSUMS_FROM)
-    if current == nil or limit == nil then
-        return false
-    end
-    for i = 1, 4 do
-        if current[i] ~= limit[i] then
-            return current[i] < limit[i]
-        end
-    end
-    return false
+    return etcd_utils.is_before(version, etcd_utils.CHECKSUMS_FROM)
 end
 
 --- Returns the SHA-256 that pinned_checksums.lua holds for an archive of an old release. Stops with the URL of the
@@ -142,6 +159,21 @@ local function pinned_checksum(version, file_name, url)
         error("no checksum for " .. file_name .. " in " .. url .. ", and none is pinned for it in this plugin")
     end
     return checksum
+end
+
+--- Stops with a message when GitHub has no release named version. The release page answers 404 for a tag without a
+--- release. PreInstall reads it before any archive, checksum or clone, so the message names the release rather than a
+--- file that is missing. The API is not used, because it limits anonymous requests.
+--- @param version string
+function etcd_utils.require_release(version)
+    local resp = fetch(etcd_utils.RELEASE_PAGE_URL .. version, 404)
+    if resp.status_code == 404 then
+        error(
+            "there is no etcd release "
+                .. version
+                .. ", see https://github.com/etcd-io/etcd/releases for the releases that exist"
+        )
+    end
 end
 
 --- Returns the SHA-256 for file_name of version, and where it comes from: "published" when the release's SHA256SUMS
@@ -307,6 +339,33 @@ function etcd_utils.failpoint_requested(value)
             .. value
             .. '", but only yes turns on the failpoint build. Unset it to install the official build.'
     )
+end
+
+--- The first release of each minor line whose Makefile has a gofail target, the target that the failpoint build runs.
+--- make stops with `No rule to make target 'install-gofail'` on an older release. The 3.4 line has the target from
+--- 3.4.29, the 3.5 line from 3.5.12, and the 3.6 line from 3.6.0-rc.0.
+etcd_utils.FAILPOINT_FROM = {
+    ["3.4"] = "3.4.29",
+    ["3.5"] = "3.5.12",
+    ["3.6"] = "3.6.0-rc.0",
+}
+
+--- Returns the first release of the minor line of version that has a gofail target. A line that is not in
+--- FAILPOINT_FROM starts at 3.4.29, the first entry: an older line has no target, and a newer one, such as 3.7, is
+--- taken as it is, because its Makefile is not read here. PostInstall still checks that the binary links the gofail
+--- runtime.
+--- @param version string a release number that passed is_valid_version
+--- @return string
+function etcd_utils.failpoint_first(version)
+    local line = string.match(version, "^(%d+%.%d+)%.")
+    return etcd_utils.FAILPOINT_FROM[line] or etcd_utils.FAILPOINT_FROM["3.4"]
+end
+
+--- Reports whether the Makefile of version has a gofail target, so that the failpoint build can run it.
+--- @param version string a release number that passed is_valid_version
+--- @return boolean
+function etcd_utils.has_failpoint_target(version)
+    return not etcd_utils.is_before(version, etcd_utils.failpoint_first(version))
 end
 
 --- The gofail runtime package. The code that a failpoint build instruments imports it, and a build without

@@ -13,6 +13,17 @@ vfox search etcd
 vfox install etcd@3.5.12
 ```
 
+## `there is no etcd release 9.9.9, see https://github.com/etcd-io/etcd/releases for the releases that exist`
+
+The version is a full release number, but GitHub has no etcd release with that name. The plugin stops before it downloads anything. Check the spelling, and pick a release from the list:
+
+```bash
+vfox search etcd
+vfox install etcd@3.5.12
+```
+
+A release that GitHub publishes, but that `vfox search etcd` does not list yet, still installs by its full name.
+
 ## `no checksum for etcd-v3.4.32-darwin-arm64.zip in ...`
 
 The release has no archive for your platform. The message names the archive the plugin wanted. Pick a release that has it, or read [platforms.md](platforms.md). For example, 3.4.32 has no Apple silicon archive, and the arm64 archive for macOS starts with 3.5.5.
@@ -77,9 +88,17 @@ The build is only complete when its binary links the gofail runtime, which the p
 
 Detection needs vfox 1.1.0 or later. Check with `vfox --version` and upgrade vfox. If no installation is found, see the list in [link.md](link.md): an etcd outside those places can still be linked by hand with `vfox link`.
 
+## `etcd 3.5.5 has no failpoint build: its Makefile has no gofail target. The failpoint build starts at etcd 3.5.12. Unset BUILD_WITH_FAILPOINT to install the official build.`
+
+The release has no gofail target in its Makefile, so the failpoint build cannot run it. The install stops before anything is cloned. Build the release that the message names, or unset the variable to install the official build:
+
+```bash
+BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
+```
+
 ## `No rule to make target 'install-gofail'`
 
-The release has no gofail targets in its Makefile. Failpoint builds were tested with etcd 3.4.32, 3.5.12 and 3.6.0. Use one of the tested releases for `BUILD_WITH_FAILPOINT=yes`, and see [failpoint.md](failpoint.md).
+The release has no gofail target in its Makefile, and the plugin did not refuse it before the clone. The plugin refuses the releases that it knows have no target, see the section above. Failpoint builds were tested with etcd 3.4.32, 3.5.12 and 3.6.0. Use one of the tested releases for `BUILD_WITH_FAILPOINT=yes`, and see [failpoint.md](failpoint.md).
 
 ## vfox requires hook support. Please ensure vfox is properly initialized with 'vfox activate'
 
