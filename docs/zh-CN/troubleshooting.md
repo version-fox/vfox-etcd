@@ -15,7 +15,7 @@ vfox install etcd@3.5.12
 
 ## `there is no etcd release 9.9.9, see https://github.com/etcd-io/etcd/releases for the releases that exist`
 
-该版本号是完整的发布版本号，但 GitHub 上没有这个名称的 etcd 发布版本。插件会在下载任何内容之前停止。请检查拼写，并从列表中选择一个发布版本：
+该版本号是完整的发布版本号，但 GitHub 上没有这个名称的 etcd 发布版本。插件会在下载发布包、校验和或源码之前停止。请检查拼写，并从列表中选择一个发布版本：
 
 ```bash
 vfox search etcd
@@ -44,9 +44,9 @@ vfox install etcd@3.5.12
 
 插件无法连接 GitHub，或者 GitHub 返回了一个错误，该错误会连同其 HTTP 状态码一起显示。请检查你的网络和任何代理设置，然后重新运行该命令。版本列表来自 jsDelivr，因此 `vfox search etcd` 也可能因为同样的网络问题而失败。
 
-## `BUILD_WITH_FAILPOINT is only supported on Linux and macOS`
+## `BUILD_WITH_FAILPOINT is only supported on Linux and macOS, installing the official Windows build.`
 
-在 Windows 上，该变量会被忽略，并改为安装官方构建版本。请将它从环境变量中移除，以停止显示此提示。关于 Linux 和 macOS 构建需要满足的条件，请参见 [failpoint.md](failpoint.md)。
+在 Windows 上，插件会安装官方构建版本，并打印这一提示。请将该变量从环境变量中移除，以停止显示此提示。关于 Linux 和 macOS 构建需要满足的条件，请参见 [failpoint.md](failpoint.md)。
 
 ## `BUILD_WITH_FAILPOINT is "1", but only yes turns on the failpoint build. Unset it to install the official build.`
 
