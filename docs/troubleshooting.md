@@ -22,7 +22,7 @@ vfox search etcd
 vfox install etcd@3.5.12
 ```
 
-A release that GitHub publishes, but that `vfox search etcd` does not list yet, still installs by its full name.
+`vfox search etcd` lists the releases that install on Linux amd64, so pick one from that list.
 
 ## `no checksum for etcd-v3.4.32-darwin-arm64.zip in ...`
 

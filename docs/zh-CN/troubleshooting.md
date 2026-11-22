@@ -22,7 +22,7 @@ vfox search etcd
 vfox install etcd@3.5.12
 ```
 
-GitHub 上已发布、但 `vfox search etcd` 尚未列出的发布版本，仍然可以通过完整名称安装。
+`vfox search etcd` 列出的是可以在 Linux amd64 上安装的发布版本，请从中选择。
 
 ## `no checksum for etcd-v3.4.32-darwin-arm64.zip in ...`
 
