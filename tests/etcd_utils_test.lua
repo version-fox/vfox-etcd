@@ -94,38 +94,23 @@ for _, version in ipairs({ "3.4.0", "3.4.1", "3.5.0-alpha.0", "3.5.12" }) do
 end
 assert(string.find(etcd_utils.pinned_notice("3.3.13", "etcd-v3.3.13-linux-amd64.tar.gz"), "pinned", 1, true))
 
--- is_before compares numbers as numbers, puts a pre-release before its release, and orders two pre-releases of one
--- release by their names.
-assert(etcd_utils.is_before("3.4.9", "3.4.29"), "3.4.9 is before 3.4.29, by number")
-assert(not etcd_utils.is_before("3.10.0", "3.9.9"), "3.10.0 is not before 3.9.9")
-assert(etcd_utils.is_before("3.5.11", "3.5.12"))
-assert(not etcd_utils.is_before("3.5.12", "3.5.12"))
-assert(etcd_utils.is_before("3.6.0-alpha.0", "3.6.0-rc.0"))
-assert(not etcd_utils.is_before("3.6.0-rc.0", "3.6.0-alpha.0"))
-assert(etcd_utils.is_before("3.6.0-rc.5", "3.6.0"))
-assert(not etcd_utils.is_before("3.6.0", "3.6.0-rc.5"))
+-- A failpoint build runs a gofail target, which a Makefile defines at the start of a line. A prerequisite,
+-- and a line of a recipe, define none.
+assert(etcd_utils.makefile_defines_gofail_target("install-gofail:\n\tgo install go.etcd.io/gofail\n"))
+assert(etcd_utils.makefile_defines_gofail_target("gofail-enable: install-gofail\n\tPASSES=toggle\n"))
+assert(not etcd_utils.makefile_defines_gofail_target("build:\n\tgo build\n"))
+assert(not etcd_utils.makefile_defines_gofail_target("build:\n\tmake install-gofail\n"))
+assert(not etcd_utils.makefile_defines_gofail_target(".PHONY: install-gofail\n"))
+assert(not etcd_utils.makefile_defines_gofail_target("FAILPOINTS ?= false\n"))
 
--- A failpoint build needs a release whose Makefile has a gofail target: 3.4.29 in the 3.4 line, 3.5.12 in the 3.5 line,
--- 3.6.0-rc.0 in the 3.6 line, and any 3.7 release. Make has no such target in the releases before them.
-for _, version in ipairs({ "3.4.29", "3.4.45", "3.5.12", "3.5.36", "3.6.0-rc.0", "3.6.17", "3.7.0-beta.0", "3.7.4" }) do
-    assert(etcd_utils.has_failpoint_target(version), "should build with failpoints: " .. version)
-end
-for _, version in ipairs({
-    "0.4.9",
-    "2.3.8",
-    "3.3.13",
-    "3.4.0-rc.4",
-    "3.4.28",
-    "3.5.0-beta.1",
-    "3.5.5",
-    "3.5.11",
-    "3.6.0-alpha.0",
-}) do
-    assert(not etcd_utils.has_failpoint_target(version), "should have no failpoint build: " .. version)
-end
-assert(etcd_utils.failpoint_first("3.5.5") == "3.5.12", etcd_utils.failpoint_first("3.5.5"))
-assert(etcd_utils.failpoint_first("3.6.0-alpha.0") == "3.6.0-rc.0", etcd_utils.failpoint_first("3.6.0-alpha.0"))
-assert(etcd_utils.failpoint_first("3.3.13") == "3.4.29", etcd_utils.failpoint_first("3.3.13"))
+-- The includes of a Makefile, in order, with the repository root that etcd's includes start with removed.
+local includes =
+    etcd_utils.makefile_includes("include $(REPOSITORY_ROOT)/tests/robustness/Makefile\n-include local.mk\n")
+assert(
+    #includes == 2 and includes[1] == "tests/robustness/Makefile" and includes[2] == "local.mk",
+    table.concat(includes, ",")
+)
+assert(#etcd_utils.makefile_includes("build:\n\tgo build\n") == 0)
 
 -- The version list is read from the release tag of the plugin, never from the default branch.
 assert(

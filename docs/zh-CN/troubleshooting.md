@@ -88,9 +88,9 @@ BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
 
 检测功能需要 vfox 1.1.0 或更高版本。请使用 `vfox --version` 检查版本，并升级 vfox。如果没有找到任何安装，请参阅 [link.md](link.md) 中的列表：不在这些位置的 etcd 仍然可以通过 `vfox link` 手动链接。
 
-## `etcd 3.5.5 has no failpoint build: its Makefile has no gofail target. The failpoint build starts at etcd 3.5.12. Unset BUILD_WITH_FAILPOINT to install the official build.`
+## `etcd 3.5.5 has no failpoint build: its Makefile has no gofail target, so the build cannot run it. Pick a release that has one, such as 3.5.12, or unset BUILD_WITH_FAILPOINT to install the official build.`
 
-该发布版本的 Makefile 中没有 gofail 目标，因此无法运行 failpoint 构建。安装会在克隆任何内容之前停止。请构建消息中指定的发布版本，或取消设置该变量以安装官方构建版本：
+插件会在克隆 etcd 之前读取该发布版本标签处的 Makefile。3.5.5 的 Makefile 中没有 gofail 目标，因此安装会在克隆任何内容之前停止。请选择带有该目标的发布版本，例如 3.5.12，或取消设置该变量以安装官方构建版本：
 
 ```bash
 BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
@@ -98,7 +98,7 @@ BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
 
 ## `No rule to make target 'install-gofail'`
 
-该发布版本的 Makefile 中没有 gofail 目标，而插件在克隆之前没有拒绝它。插件只会拒绝它已知没有该目标的发布版本，参见上一节。failpoint 构建已在 etcd 3.4.32、3.5.12 和 3.6.0 上测试过。使用 `BUILD_WITH_FAILPOINT=yes` 时，请选择其中一个经过测试的发布版本，并参阅 [failpoint.md](failpoint.md)。
+插件会在克隆 etcd 之前读取标签处的 Makefile，并拒绝其中没有 gofail 目标的发布版本。因此出现这个错误，说明插件读取的 Makefile 中有该目标，而 make 却没有找到它。请附上发布版本号报告此问题。failpoint 构建已在 etcd 3.4.32、3.5.12 和 3.6.0 上测试过。使用 `BUILD_WITH_FAILPOINT=yes` 时，请选择其中一个经过测试的发布版本，并参阅 [failpoint.md](failpoint.md)。
 
 ## vfox requires hook support. Please ensure vfox is properly initialized with 'vfox activate'
 

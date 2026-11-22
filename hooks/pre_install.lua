@@ -27,17 +27,6 @@ function PLUGIN:PreInstall(ctx)
     -- Build etcd with failpoints from source: https://github.com/etcd-io/etcd/tree/main/tests/robustness#running-locally
     if etcdUtils.failpoint_requested(os.getenv("BUILD_WITH_FAILPOINT")) then
         if RUNTIME.osType ~= "windows" then
-            -- Make stops after the clone when the release has no gofail target, so such a release is refused first.
-            if not etcdUtils.has_failpoint_target(etcd_version) then
-                error(
-                    "etcd "
-                        .. etcd_version
-                        .. " has no failpoint build: its Makefile has no gofail target. "
-                        .. "The failpoint build starts at etcd "
-                        .. etcdUtils.failpoint_first(etcd_version)
-                        .. ". Unset BUILD_WITH_FAILPOINT to install the official build."
-                )
-            end
             -- The build runs these programs, so a missing one stops the install before anything is cloned.
             local missing = etcdUtils.missing_build_tools()
             if #missing > 0 then
@@ -49,6 +38,17 @@ function PLUGIN:PreInstall(ctx)
                 )
             end
             etcdUtils.require_release(etcd_version)
+            -- Make stops after the clone when the release has no gofail target, so the Makefile at its tag is read
+            -- before the clone, and a release without a target is refused.
+            if not etcdUtils.has_failpoint_target(etcd_version) then
+                error(
+                    "etcd "
+                        .. etcd_version
+                        .. " has no failpoint build: its Makefile has no gofail target, so the build cannot run it. "
+                        .. "Pick a release that has one, such as 3.5.12, "
+                        .. "or unset BUILD_WITH_FAILPOINT to install the official build."
+                )
+            end
             -- PostInstall builds the source, so there is nothing to download.
             return {
                 version = etcd_version,

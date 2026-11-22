@@ -7,7 +7,7 @@ What changed in each release, as a user notices it. GitHub's release pages list 
 ## Unreleased
 
 - `vfox install etcd@9.9.9` stops with `there is no etcd release 9.9.9` when GitHub has no release with that name, before anything is downloaded. Before, the install failed with an HTTP 404 for the release's `SHA256SUMS`. See [troubleshooting.md](troubleshooting.md).
-- `BUILD_WITH_FAILPOINT=yes` refuses a release whose Makefile has no gofail target, such as 3.5.5, before it clones etcd, and names the first release of its line that has one. Before, the clone ran and the install ended with a raw `make` error. See [failpoint.md](failpoint.md).
+- `BUILD_WITH_FAILPOINT=yes` reads the Makefile of the release before it clones etcd, and refuses a release that has no gofail target in it, such as 3.5.5, with a message that names the release. Before, the clone ran and the install ended with a raw `make` error. See [failpoint.md](failpoint.md).
 
 ## 0.2.2 (2026-11-22)
 

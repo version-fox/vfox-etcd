@@ -20,7 +20,7 @@
 ## 各钩子的作用
 
 - `Available` 列出插件版本对应发布标签处的 `assets/versions.txt` 中的版本，因此每个发布版本列出的都是它发布时的版本。
-- `PreInstall` 检查版本以及 GitHub 上是否存在该发布版本，并从发布版本的 `SHA256SUMS` 中返回发布包的 URL 和 checksum。早于 `3.4.0` 的发布版本可能没有该发布包的 checksum，此时会改用为该发布包固定的 SHA-256 值进行核对。在 Linux 或 macOS 上设置 `BUILD_WITH_FAILPOINT=yes` 时，它会检查该发布版本是否有 gofail 目标，并检查 `git`、`go` 和 `make` 是否位于 `PATH` 中，然后不返回发布包，因此会改为从源码构建。该变量的值若既不是 `yes`、`no` 也不是空，则会使安装中止。
+- `PreInstall` 检查版本以及 GitHub 上是否存在该发布版本，并从发布版本的 `SHA256SUMS` 中返回发布包的 URL 和 checksum。早于 `3.4.0` 的发布版本可能没有该发布包的 checksum，此时会改用为该发布包固定的 SHA-256 值进行核对。在 Linux 或 macOS 上设置 `BUILD_WITH_FAILPOINT=yes` 时，它会检查 `git`、`go` 和 `make` 是否位于 `PATH` 中，并检查该发布版本标签处的 Makefile 是否有 gofail 目标，然后不返回发布包，因此会改为从源码构建。该变量的值若既不是 `yes`、`no` 也不是空，则会使安装中止。
 - `PostInstall` 在被要求时运行 failpoint 构建，然后检查二进制文件是否链接了 gofail 运行时。
 - `EnvKeys` 把可执行文件放入 `PATH`。链接的系统安装位于 `bin/` 中，源码构建位于 `etcd/bin` 中，发布包则位于根目录。
 - `PreUse` 拒绝使用未安装的版本。

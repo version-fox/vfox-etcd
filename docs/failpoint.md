@@ -10,7 +10,7 @@ BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
 
 The plugin has been tested with etcd 3.4.32, 3.5.12 and 3.6.0. Only the exact value `yes` turns the build on: any other value, such as `1`, stops the install with an error, and an unset or empty variable installs the official build.
 
-A release can be built only when its Makefile has a gofail target: 3.4.29 and later in the 3.4 line, 3.5.12 and later in the 3.5 line, 3.6.0-rc.0 and later in the 3.6 line, and every 3.7 release. The plugin refuses any other release before it clones etcd.
+Before it clones etcd, the plugin reads the Makefile at the tag of the release, and the files that it includes. It refuses a release that has no gofail target in them, since make would stop after the clone. Releases that have one include 3.4.29 and later in the 3.4 line, 3.5.12 and later in the 3.5 line, 3.6.0-rc.0 and later in the 3.6 line, and every 3.7 release.
 
 ## What the build does
 

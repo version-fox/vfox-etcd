@@ -88,9 +88,9 @@ The build is only complete when its binary links the gofail runtime, which the p
 
 Detection needs vfox 1.1.0 or later. Check with `vfox --version` and upgrade vfox. If no installation is found, see the list in [link.md](link.md): an etcd outside those places can still be linked by hand with `vfox link`.
 
-## `etcd 3.5.5 has no failpoint build: its Makefile has no gofail target. The failpoint build starts at etcd 3.5.12. Unset BUILD_WITH_FAILPOINT to install the official build.`
+## `etcd 3.5.5 has no failpoint build: its Makefile has no gofail target, so the build cannot run it. Pick a release that has one, such as 3.5.12, or unset BUILD_WITH_FAILPOINT to install the official build.`
 
-The release has no gofail target in its Makefile, so the failpoint build cannot run it. The install stops before anything is cloned. Build the release that the message names, or unset the variable to install the official build:
+The plugin reads the Makefile at the tag of the release before it clones etcd. This release has no gofail target in it, so the install stops before anything is cloned. Pick a release that has one, such as 3.5.12, or unset the variable to install the official build:
 
 ```bash
 BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
@@ -98,7 +98,7 @@ BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
 
 ## `No rule to make target 'install-gofail'`
 
-The release has no gofail target in its Makefile, and the plugin did not refuse it before the clone. The plugin refuses the releases that it knows have no target, see the section above. Failpoint builds were tested with etcd 3.4.32, 3.5.12 and 3.6.0. Use one of the tested releases for `BUILD_WITH_FAILPOINT=yes`, and see [failpoint.md](failpoint.md).
+The plugin reads the Makefile at the tag before it clones etcd, and refuses a release without a gofail target. So this error means that the Makefile it read has a target that make did not find: report it with the release number. Failpoint builds were tested with etcd 3.4.32, 3.5.12 and 3.6.0. Use one of the tested releases for `BUILD_WITH_FAILPOINT=yes`, and see [failpoint.md](failpoint.md).
 
 ## vfox requires hook support. Please ensure vfox is properly initialized with 'vfox activate'
 

@@ -13,7 +13,7 @@
 -- limitations under the License.
 
 -- With BUILD_WITH_FAILPOINT=yes on Linux and the build tools on PATH, PreInstall returns no archive: PostInstall builds
--- the source. The release page is read first, to check that the release exists.
+-- the source. Before that, the release page and the Makefile at the tag are read, to check the release and its target.
 package.path = "./lib/?.lua;" .. package.path
 local test = require("vfox.test")
 local etcd_utils = require("etcd_utils")
@@ -37,6 +37,9 @@ local plugin = test.load({
         if request.url == "https://github.com/etcd-io/etcd/releases/tag/v3.4.32" then
             return { status_code = 200, body = "", headers = {} }
         end
+        if request.url == "https://raw.githubusercontent.com/etcd-io/etcd/v3.4.32/Makefile" then
+            return { status_code = 200, body = "gofail-enable: install-gofail\n\tPASSES=toggle\n", headers = {} }
+        end
         return { status_code = 404, body = "", headers = {} }
     end,
 })
@@ -45,4 +48,4 @@ local info = plugin:PreInstall({ version = "3.4.32" })
 assert(info.version == "3.4.32", tostring(info.version))
 assert((info.url or "") == "" and (info.sha256 or "") == "", "a failpoint build has no archive")
 assert(not downloaded, "a failpoint build downloads no archive and no SHA256SUMS")
-assert(#requests == 1, table.concat(requests, " "))
+assert(#requests == 2, table.concat(requests, " "))
