@@ -19,9 +19,9 @@ This page is for people who change the plugin. For using it, see the [README](..
 
 ## What the hooks do
 
-- `Available` lists the versions in `assets/versions.txt`.
-- `PreInstall` checks the version, and returns the archive URL and the checksum from the release's `SHA256SUMS`. A release older than `3.4.0` may have no checksum for its archive; then the checksum is the one pinned in `lib/pinned_checksums.lua`. With `BUILD_WITH_FAILPOINT=yes` on Linux or macOS, it returns no archive, so the source is built.
-- `PostInstall` runs the failpoint build when it is asked for.
+- `Available` lists the versions in `assets/versions.txt` at the release tag of the plugin's version, so a release lists the versions it was released with.
+- `PreInstall` checks the version, and returns the archive URL and the checksum from the release's `SHA256SUMS`. A release older than `3.4.0` may have no checksum for its archive; then the checksum is the one pinned in `lib/pinned_checksums.lua`. With `BUILD_WITH_FAILPOINT=yes` on Linux or macOS, it checks that `git`, `go` and `make` are on `PATH`, and returns no archive, so the source is built. A value of `BUILD_WITH_FAILPOINT` other than `yes`, `no` or empty stops the install.
+- `PostInstall` runs the failpoint build when it is asked for, then checks that the binary links the gofail runtime.
 - `EnvKeys` puts the binaries on `PATH`. They sit in `bin/` for a linked system install, in `etcd/bin` for a source build, and at the root for an archive.
 - `PreUse` refuses a version that is not installed.
 - `Detect` scans for etcd installations for `vfox link --detect etcd`. See [link.md](link.md).
@@ -51,7 +51,7 @@ The tools are pinned: stylua 2.6.0, lua-language-server 3.19.1, actionlint 1.7.1
 - A test file calls `require("vfox.test")` and `test.load(...)` once. `test.load` takes the platform, the environment, and an `http` handler that answers the plugin's requests.
 - Helpers in `lib/` are loaded with `require`, after `package.path = "./lib/?.lua;" .. package.path`.
 - A test may replace a function it needs, such as `os.execute` or `etcd_utils.file_exists`, before it calls the hook.
-- `os.execute` cannot run a real command here, so the build and the directory probes are tested with replacements. The end-to-end suites run the real ones.
+- `os.execute` cannot run a real command here, so the build, the tool check and the binary check are tested with replacements. The end-to-end suites run the real ones.
 
 ## Writing documentation
 
@@ -93,7 +93,7 @@ The workflow follows the shared `@v1` release-tool version. Updating the tool do
 
 ## Versions list
 
-`assets/versions.txt` is refreshed by the `update_etcd_versions` workflow every Monday. It reads the etcd tags with the GitHub API, and keeps a version when its linux-amd64 archive can be installed: the release's `SHA256SUMS` lists the archive, or the release is older than `3.4.0` and the archive can be downloaded; the plugin then checks that archive against `lib/pinned_checksums.lua`. The checks run 16 at a time. It fails, without touching the list, when GitHub cannot be reached or answers with an error other than 404 for `SHA256SUMS` or the archive, because a 404 means the release does not publish that file. To refresh it by hand, run it from the `assets` directory with a token in `GITHUB_TOKEN`:
+`assets/versions.txt` is refreshed by the `update_etcd_versions` workflow every Monday. It reads the etcd tags with the GitHub API, and keeps a version when its linux-amd64 archive can be installed: the release's `SHA256SUMS` lists the archive, or the release is older than `3.4.0` and the archive can be downloaded; the plugin then checks that archive against `lib/pinned_checksums.lua`. The checks run 16 at a time. It fails, without touching the list, when GitHub cannot be reached or answers with an error other than 404 for `SHA256SUMS` or the archive, because a 404 means the release does not publish that file. A plugin release reads the file at its own tag, `v<version>`, so a refreshed list reaches users with the next release. To refresh it by hand, run it from the `assets` directory with a token in `GITHUB_TOKEN`:
 
 ```bash
 cd assets && python3 -m pip install requests packaging && python3 get_all_etcd_versions.py

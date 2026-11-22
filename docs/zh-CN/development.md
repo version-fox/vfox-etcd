@@ -19,9 +19,9 @@
 
 ## 各钩子的作用
 
-- `Available` 列出 `assets/versions.txt` 中的版本。
-- `PreInstall` 检查版本，并从发布版本的 `SHA256SUMS` 中返回发布包的 URL 和 checksum。早于 `3.4.0` 的发布版本可能没有该发布包的 checksum，此时会改用为该发布包固定的 SHA-256 值进行核对。在 Linux 或 macOS 上设置 `BUILD_WITH_FAILPOINT=yes` 时，它不返回发布包，因此会改为从源码构建。
-- `PostInstall` 在被要求时运行 failpoint 构建。
+- `Available` 列出插件版本对应发布标签处的 `assets/versions.txt` 中的版本，因此每个发布版本列出的都是它发布时的版本。
+- `PreInstall` 检查版本，并从发布版本的 `SHA256SUMS` 中返回发布包的 URL 和 checksum。早于 `3.4.0` 的发布版本可能没有该发布包的 checksum，此时会改用为该发布包固定的 SHA-256 值进行核对。在 Linux 或 macOS 上设置 `BUILD_WITH_FAILPOINT=yes` 时，它会检查 `git`、`go` 和 `make` 是否位于 `PATH` 中，然后不返回发布包，因此会改为从源码构建。该变量的值若既不是 `yes`、`no` 也不是空，则会使安装中止。
+- `PostInstall` 在被要求时运行 failpoint 构建，然后检查二进制文件是否链接了 gofail 运行时。
 - `EnvKeys` 把可执行文件放入 `PATH`。链接的系统安装位于 `bin/` 中，源码构建位于 `etcd/bin` 中，发布包则位于根目录。
 - `PreUse` 拒绝使用未安装的版本。
 - `Detect` 为 `vfox link --detect etcd` 扫描 etcd 的安装。参见 [link.md](link.md)。
@@ -51,7 +51,7 @@ CI 会运行这些检查，拉取请求必须全部通过。请运行与你所�
 - 测试文件需调用一次 `require("vfox.test")` 和 `test.load(...)`。`test.load` 接收平台、环境，以及一个用于响应插件请求的 `http` 处理函数。
 - `lib/` 中的辅助模块通过 `require` 加载，且须在 `package.path = "./lib/?.lua;" .. package.path` 之后进行。
 - 测试可以在调用钩子之前替换其所需的函数，例如 `os.execute` 或 `etcd_utils.file_exists`。
-- 这里无法让 `os.execute` 运行真实命令，因此构建和目录探测通过替换函数进行测试。端到端测试套件会运行真实的命令。
+- 这里无法让 `os.execute` 运行真实命令，因此构建、工具检查和二进制检查通过替换函数进行测试。端到端测试套件会运行真实的命令。
 
 ## 编写文档
 
@@ -93,7 +93,7 @@ python3 -m http.server 8080 --directory /tmp/vfox-etcd-site
 
 ## 版本列表
 
-`assets/versions.txt` 由 `update_etcd_versions` 工作流每周一刷新。它通过 GitHub API 读取 etcd 的标签，并保留其 linux-amd64 发布包可以安装的版本：该发布版本的 `SHA256SUMS` 列出了此发布包，或者该版本早于 `3.4.0` 且该发布包可以下载，插件随后会用 `lib/pinned_checksums.lua` 中为它固定的 SHA-256 值进行校验。这些检查同时进行，最多 16 个。当无法连接 GitHub，或请求 `SHA256SUMS` 或发布包时返回的错误不是 404 时，它会失败，且不会修改列表；404 表示该发布版本不提供该文件。若要手动刷新，请在 `assets` 目录中运行它，并在 `GITHUB_TOKEN` 中提供令牌：
+`assets/versions.txt` 由 `update_etcd_versions` 工作流每周一刷新。它通过 GitHub API 读取 etcd 的标签，并保留其 linux-amd64 发布包可以安装的版本：该发布版本的 `SHA256SUMS` 列出了此发布包，或者该版本早于 `3.4.0` 且该发布包可以下载，插件随后会用 `lib/pinned_checksums.lua` 中为它固定的 SHA-256 值进行校验。这些检查同时进行，最多 16 个。当无法连接 GitHub，或请求 `SHA256SUMS` 或发布包时返回的错误不是 404 时，它会失败，且不会修改列表；404 表示该发布版本不提供该文件。插件的每个发布版本都读取其自身标签（`v<version>`）处的文件，因此刷新后的列表随下一个发布版本到达用户。若要手动刷新，请在 `assets` 目录中运行它，并在 `GITHUB_TOKEN` 中提供令牌：
 
 ```bash
 cd assets && python3 -m pip install requests packaging && python3 get_all_etcd_versions.py

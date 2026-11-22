@@ -4,6 +4,16 @@
 
 以下是每个发布版本中用户能够感知到的变化。GitHub 的发布页面列出了对应的拉取请求。
 
+## Unreleased
+
+- `vfox search etcd` 读取插件自身发布标签处的版本列表，因此每个发布版本列出的都是它发布时的版本。默认分支上陈旧的列表副本不再改变某个发布版本的显示结果。刷新后的列表随下一个发布版本到达用户。参见 [versions.md](versions.md)。
+- `BUILD_WITH_FAILPOINT=yes` 可以构建带 failpoint 的 etcd 3.6.0。对于有 `gofail-enable` 目标的发布版本，插件会运行 `make gofail-enable`（3.6.0 把该目标定义在被包含的 makefile 中）；若二进制文件中没有 gofail 运行时，构建会被视为错误，而不是显示为成功的安装。参见 [failpoint.md](failpoint.md)。
+- `BUILD_WITH_FAILPOINT` 只接受 `yes`。`1` 或 `true` 等其他值会使安装因提示信息而中止。此前它们会悄无声息地安装官方构建版本。未设置或为空的变量，以及 `no`，仍会安装官方构建版本。
+- failpoint 构建在克隆 etcd 之前检查 `git`、`go` 和 `make`，并指出缺少的那一个。
+- 网站上的 failpoint 示例改用 etcd 3.5.12，该构建已在此版本上测试过。使用 3.5.5 的示例失败了。
+- `vfox link --detect etcd` 能找到以标签形式打印版本的 etcd，例如 0.3.0 发布版本输出的 `v0.3.0`。
+- 英文版本页面现在说明：早于 3.4.0 的发布版本，其发布包会按插件固定的 SHA-256 进行校验，与代码一致。
+
 ## 0.2.1 (2026-11-21)
 
 - `vfox link --detect etcd` 会找到机器上已经安装的 etcd，并将它们链接进来，而不再下载另一份副本。该功能需要 vfox 1.1.0 或更高版本。每个安装都以其版本及发现位置命名，例如 `3.5.12-system` 或 `3.5.12-brew`。参见 [link.md](link.md)。

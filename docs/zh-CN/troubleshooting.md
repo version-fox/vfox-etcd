@@ -37,6 +37,27 @@ vfox install etcd@3.5.12
 
 在 Windows 上，该变量会被忽略，并改为安装官方构建版本。请将它从环境变量中移除，以停止显示此提示。关于 Linux 和 macOS 构建需要满足的条件，请参见 [failpoint.md](failpoint.md)。
 
+## `BUILD_WITH_FAILPOINT is "1", but only yes turns on the failpoint build. Unset it to install the official build.`
+
+只有精确的值 `yes` 才会启用 failpoint 构建。请设为 `yes`，或取消设置以安装官方构建版本：
+
+```bash
+BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
+```
+
+## `the failpoint build needs git, go, make on PATH; not found: go`
+
+failpoint 构建需要克隆 etcd，并运行 Go 和 GNU Make，而其中某个程序在运行 `vfox install` 时不在 `PATH` 中。安装会在克隆任何内容之前停止。请安装缺少的程序，或把包含它的目录加入 `PATH`，然后重新安装。
+
+## `etcd 3.6.0 was built without failpoints: ... does not link the gofail runtime. Uninstall the version and install it again.`
+
+构建已完成，但其二进制文件中没有 gofail 运行时，因此插件会拒绝此次安装，而不是把一个没有 failpoint 的构建当作成功。请移除该版本，然后重新安装：
+
+```bash
+vfox uninstall etcd@3.6.0
+BUILD_WITH_FAILPOINT=yes vfox install etcd@3.6.0
+```
+
 ## `etcd build with failpoint failed, check the output above for details.`
 
 消息上方的输出会显示失败的命令。常见原因是缺少 Git、Go 或 GNU Make，或者所用的 Go 版本不被该 etcd 发布版本接受。失败的构建可能会留下一个不完整的克隆，因此在重试之前，请先删除该版本：
@@ -46,7 +67,7 @@ vfox uninstall etcd@3.5.12
 BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
 ```
 
-只有当 `etcd --version` 在其 Git SHA 中输出 `-FAILPOINTS` 时，构建才算完成。
+只有当其二进制文件链接了 gofail 运行时（插件会检查这一点）时，构建才算完成。对于 3.4 和 3.5，`etcd --version` 还会在其 Git SHA 中输出 `-FAILPOINTS`。
 
 ## etcd 3.5.12 is not installed, run `vfox install etcd@3.5.12` first
 
@@ -58,7 +79,7 @@ BUILD_WITH_FAILPOINT=yes vfox install etcd@3.5.12
 
 ## `No rule to make target 'install-gofail'`
 
-该发布版本的 Makefile 中没有 gofail 目标。failpoint 构建已在 etcd 3.4.32 和 3.5.12 上测试过，而 3.6.0 发布版本中没有这些目标。使用 `BUILD_WITH_FAILPOINT=yes` 时，请选择经过测试的发布版本之一，并参阅 [failpoint.md](failpoint.md)。
+该发布版本的 Makefile 中没有 gofail 目标。failpoint 构建已在 etcd 3.4.32、3.5.12 和 3.6.0 上测试过。使用 `BUILD_WITH_FAILPOINT=yes` 时，请选择经过测试的发布版本之一，并参阅 [failpoint.md](failpoint.md)。
 
 ## vfox requires hook support. Please ensure vfox is properly initialized with 'vfox activate'
 
