@@ -27,7 +27,7 @@ vfox use -g etcd@3.5.12
 etcd --version
 ```
 
-`vfox add etcd` installs the latest release. To try `main`, a branch, or a change you are working on, see [install-from-source.md](docs/install-from-source.md).
+`vfox add etcd` only adds the plugin. `vfox install etcd@latest` installs the latest release. To try `main`, a branch, or a change you are working on, see [install-from-source.md](docs/install-from-source.md).
 
 For `etcd` to be on the `PATH`, vfox has to be hooked into your shell, see its [quick start](https://vfox.dev/guides/quick-start.html). `vfox use -g` selects a version for every new shell, and `vfox use` only for the current one.
 
