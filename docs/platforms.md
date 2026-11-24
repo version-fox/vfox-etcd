@@ -8,7 +8,7 @@ The plugin installs the archive that etcd publishes for your platform. Which arc
 | --- | --- | --- | --- |
 | Linux | amd64, arm64, ppc64le, s390x | `.tar.gz` | The archive needs no packages. A failpoint build needs Git, Go and GNU Make. |
 | macOS | amd64, arm64 | `.zip` | The arm64 archive starts with 3.5.5; 3.4.32 has only amd64. |
-| Windows | amd64 | `.zip` | `BUILD_WITH_FAILPOINT` is not supported, the official build is installed instead. |
+| Windows | amd64 | `.zip` | No arm64 archive is published, so an install on arm64 stops with a message. `BUILD_WITH_FAILPOINT` is not supported, the official build is installed instead. |
 
 The CPUs in the table are the ones etcd 3.5.12 publishes archives for. The plugin asks for the archive named after the CPU that vfox reports, so an archive that etcd publishes is installed the same way on any of them.
 

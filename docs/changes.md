@@ -4,6 +4,10 @@
 
 What changed in each release, as a user notices it. GitHub's release pages list the pull requests.
 
+## Unreleased
+
+- An install of a release that has no archive for your platform stops before anything is downloaded, and the message names the platform, such as `etcd 3.7.4 has no Windows arm64 build`. Before, it stopped with `no checksum for ...`, which named the file. See [troubleshooting.md](troubleshooting.md).
+
 ## 0.2.3 (2026-11-22)
 
 - `vfox install etcd@9.9.9` stops with `there is no etcd release 9.9.9` when GitHub has no release with that name, before the archive, its checksum or the source is downloaded. Before, the install failed with an HTTP 404 for the release's `SHA256SUMS`. See [troubleshooting.md](troubleshooting.md).

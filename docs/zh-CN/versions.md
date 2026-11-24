@@ -14,7 +14,7 @@
 vfox install etcd@3.5.12
 ```
 
-vfox 会从 etcd 的发布版本中下载适用于你平台的发布包，并与该发布版本在 `SHA256SUMS` 中公布的 SHA-256 进行核对。如果该文件中没有你平台的条目，安装会因 `no checksum for ...` 而中止：这说明该发布版本没有适用于你平台的构建，参见 [platforms.md](platforms.md)。早于 3.4.0 的发布版本可能完全没有校验和文件。此时插件会用为其发布包固定的 SHA-256 值进行校验，并在安装前说明这一点，参见 [troubleshooting.md](troubleshooting.md)。
+vfox 会从 etcd 的发布版本中下载适用于你平台的发布包，并与该发布版本在 `SHA256SUMS` 中公布的 SHA-256 进行核对。如果该文件中没有你平台的条目，安装会以类似 `etcd 3.7.4 has no Windows arm64 build` 的消息中止：这说明该发布版本没有适用于你平台的构建，参见 [platforms.md](platforms.md)。早于 3.4.0 的发布版本可能完全没有校验和文件。此时插件会用为其发布包固定的 SHA-256 值进行校验，并在安装前说明这一点，参见 [troubleshooting.md](troubleshooting.md)。
 
 请给出完整的版本号。像 `etcd@3.5` 这样的不完整版本会被拒绝并显示 `invalid etcd version`，因为插件无法判断它指的是哪一个发布版本。
 

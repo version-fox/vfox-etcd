@@ -4,6 +4,10 @@
 
 以下是每个发布版本中用户能够感知到的变化。GitHub 的发布页面列出了对应的拉取请求。
 
+## Unreleased
+
+- 当某个发布版本没有你平台的发布包时，安装会在下载任何内容之前停止，并写明缺少的平台，例如 `etcd 3.7.4 has no Windows arm64 build`。此前它以 `no checksum for ...` 停止，只写出文件名。参见 [troubleshooting.md](troubleshooting.md)。
+
 ## 0.2.3 (2026-11-22)
 
 - 当 GitHub 上没有该名称的发布版本时，`vfox install etcd@9.9.9` 会以 `there is no etcd release 9.9.9` 停止，并且在下载发布包、校验和或源码之前结束。此前安装会因为该发布版本的 `SHA256SUMS` 返回 HTTP 404 而失败。参见 [troubleshooting.md](troubleshooting.md)。
