@@ -17,7 +17,7 @@ local etcdUtils = require("etcd_utils")
 --- Returns some pre-installed information, such as version number, download address, local files, etc.
 --- If checksum is provided, vfox will automatically check it for you.
 --- @param ctx table Context information; ctx.version is the version the user asked for
---- @return table Version information
+--- @return table|nil Version information, or nil when the release has no build for the platform
 function PLUGIN:PreInstall(ctx)
     local etcd_version = ctx.version
     if not etcdUtils.is_valid_version(etcd_version) then
@@ -62,8 +62,10 @@ function PLUGIN:PreInstall(ctx)
     local file = etcdUtils.archive_name(etcd_version, RUNTIME.osType, RUNTIME.archType)
     local checksum, source = etcdUtils.get_sha256sums(etcd_version, file)
     if checksum == nil then
-        -- Level 0 leaves the file position out of the message: the traceback that vfox prints already names it.
-        error(etcdUtils.no_build_message(etcd_version, RUNTIME.osType, RUNTIME.archType), 0)
+        -- vfox prints a stack traceback below every error that a hook raises. So the message is printed, and the hook
+        -- returns nothing: vfox stops the install with "no installable runtime provided", and prints no traceback.
+        print(etcdUtils.no_build_message(etcd_version, RUNTIME.osType, RUNTIME.archType))
+        return nil
     end
     local download_url = etcdUtils.RELEASE_URL .. etcd_version .. "/" .. file
     print("etcd download url: " .. download_url)

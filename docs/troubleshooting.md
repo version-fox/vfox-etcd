@@ -26,7 +26,7 @@ vfox install etcd@3.5.12
 
 ## `etcd 3.7.4 has no Windows arm64 build, see https://github.com/etcd-io/etcd/releases/tag/v3.7.4 for the archives it has`
 
-The release has no archive for your platform, so the install stops before anything is downloaded. vfox prints a stack traceback below the message, as it does for every message from a plugin hook. Pick a release that has an archive for your platform, or read [platforms.md](platforms.md). etcd has published no arm64 archive for Windows in any release, so on Windows arm64 this is the message to expect. For example, 3.4.32 has no Apple silicon archive, and the arm64 archive for macOS starts with 3.5.5.
+The release has no archive for your platform, so the install stops before the archive is downloaded. The message is printed without a stack traceback. vfox then reports `no installable runtime provided`, which is what it reports when a plugin returns no result from `PreInstall`. Pick a release that has an archive for your platform, or read [platforms.md](platforms.md). etcd has published no arm64 archive for Windows in any release, so on Windows arm64 this is the message to expect. For example, 3.4.32 has no Apple silicon archive, and the arm64 archive for macOS starts with 3.5.5.
 
 ## `could not download https://github.com/etcd-io/etcd/releases/download/v3.5.0-alpha.0/SHA256SUMS: HTTP 404`
 
@@ -36,9 +36,9 @@ The release publishes no `SHA256SUMS`, and it is 3.4.0 or later. The plugin does
 
 The release is before 3.4.0, and its `SHA256SUMS` has no entry for the archive, or no file at all. The plugin checks the archive against the SHA-256 that it pins for it, and prints this line before the install. The pinned values were taken from the archives GitHub served when the plugin was pinned, so the check guards against a change after that, not against a bad download at that time.
 
-## `no checksum for ... and none is pinned for it in this plugin`
+## `etcd 3.3.13 has no Windows arm64 build that the plugin has a checksum for, see https://github.com/etcd-io/etcd/releases/tag/v3.3.13 for the archives it has`
 
-The release has no archive for that platform, or it is not in the version list, so the plugin has no checksum for it and does not install it. Pick another release, or see [platforms.md](platforms.md).
+The release is older than 3.4.0. Its `SHA256SUMS` may be missing, or may not list the archive for your platform, and the plugin pins no checksum for that archive. The plugin does not install an archive that it cannot check, so the install stops before the archive is downloaded, and no stack traceback follows the message. The message does not say that the release has no build, because the plugin knows only the archives it pins. Pick another release, or see [platforms.md](platforms.md).
 
 ## `could not download https://...`
 

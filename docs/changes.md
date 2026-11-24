@@ -6,7 +6,7 @@ What changed in each release, as a user notices it. GitHub's release pages list 
 
 ## Unreleased
 
-- An install of a release that has no archive for your platform stops before anything is downloaded, and the message names the platform, such as `etcd 3.7.4 has no Windows arm64 build`. Before, it stopped with `no checksum for ...`, which named the file. See [troubleshooting.md](troubleshooting.md).
+- An install of a release that has no archive for your platform stops before the archive is downloaded. The message names the platform, such as `etcd 3.7.4 has no Windows arm64 build`, and no stack traceback follows it. Before, it stopped with `no checksum for ...`, which named the file, and a stack traceback followed. See [troubleshooting.md](troubleshooting.md).
 
 ## 0.2.3 (2026-11-22)
 

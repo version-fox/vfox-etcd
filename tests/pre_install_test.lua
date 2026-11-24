@@ -29,6 +29,12 @@ local sums = CHECKSUM
 local status = 200
 local requests = {}
 
+-- The lines the hook prints. A refusal prints its message and returns nothing, instead of raising an error.
+local printed = {}
+print = function(line)
+    table.insert(printed, line)
+end
+
 local plugin = test.load({
     os = "linux",
     arch = "amd64",
@@ -50,18 +56,18 @@ assert(info.version == "3.5.12")
 assert(info.url == "https://github.com/etcd-io/etcd/releases/download/v3.5.12/" .. ARCHIVE, info.url)
 assert(info.sha256 == CHECKSUM, tostring(info.sha256))
 
--- A checksum that is missing fails the install: vfox skips verification when none is given.
+-- A checksum that is missing refuses the install, and the hook prints why: vfox skips verification when none is given,
+-- so the archive would be installed unverified.
 sums = "2222222222222222222222222222222222222222222222222222222222222222  etcd-v3.5.12-linux-arm64.tar.gz\n"
-local ok, err = pcall(function()
-    return plugin:PreInstall({ version = "3.5.12" })
-end)
-assert(
-    not ok and string.find(tostring(err), "etcd 3.5.12 has no Linux amd64 build, see " .. RELEASE_PAGE, 1, true),
-    tostring(err)
-)
+printed = {}
+local refused = plugin:PreInstall({ version = "3.5.12" })
+assert(refused == nil, tostring(refused))
+local expected = "etcd 3.5.12 has no Linux amd64 build, see " .. RELEASE_PAGE .. " for the archives it has"
+assert(#printed == 1 and printed[1] == expected, table.concat(printed, "\n"))
 sums = CHECKSUM .. "  " .. ARCHIVE .. "\n"
 
 -- A failed SHA256SUMS download fails too, and names the status.
+local ok, err
 status = 500
 ok, err = pcall(function()
     return plugin:PreInstall({ version = "3.5.12" })
