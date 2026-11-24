@@ -61,6 +61,10 @@ function PLUGIN:PreInstall(ctx)
 
     local file = etcdUtils.archive_name(etcd_version, RUNTIME.osType, RUNTIME.archType)
     local checksum, source = etcdUtils.get_sha256sums(etcd_version, file)
+    if checksum == nil then
+        -- Level 0 leaves the file position out of the message: the traceback that vfox prints already names it.
+        error(etcdUtils.no_build_message(etcd_version, RUNTIME.osType, RUNTIME.archType), 0)
+    end
     local download_url = etcdUtils.RELEASE_URL .. etcd_version .. "/" .. file
     print("etcd download url: " .. download_url)
     if source == "pinned" then

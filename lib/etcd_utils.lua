@@ -108,6 +108,27 @@ function etcd_utils.archive_name(version, os_type, arch_type)
     return "etcd-v" .. version .. "-" .. string.lower(os_type) .. "-" .. string.lower(arch_type) .. extension
 end
 
+--- The operating systems as the messages name them. vfox reports macOS as darwin.
+local OS_NAMES = { linux = "Linux", darwin = "macOS", windows = "Windows" }
+
+--- Returns the message for a release that publishes no archive for the platform, such as "etcd 3.7.4 has no Windows
+--- arm64 build, see https://github.com/etcd-io/etcd/releases/tag/v3.7.4 for the archives it has". It names the release
+--- page, which lists the archives that the release has.
+--- @param version string
+--- @param os_type string vfox's RUNTIME.osType
+--- @param arch_type string vfox's RUNTIME.archType
+--- @return string
+function etcd_utils.no_build_message(version, os_type, arch_type)
+    local platform = (OS_NAMES[os_type] or os_type) .. " " .. arch_type
+    return string.format(
+        "etcd %s has no %s build, see %s%s for the archives it has",
+        version,
+        platform,
+        etcd_utils.RELEASE_PAGE_URL,
+        version
+    )
+end
+
 --- Reports whether version is older than CHECKSUMS_FROM. A pre-release sorts before its release, so 3.4.0-rc.1 is
 --- older than 3.4.0.
 --- @param version string a release number that passed is_valid_version
@@ -164,13 +185,14 @@ function etcd_utils.require_release(version)
 end
 
 --- Returns the SHA-256 for file_name of version, and where it comes from: "published" when the release's SHA256SUMS
---- lists the archive, or "pinned" when the release is older than CHECKSUMS_FROM and the plugin pins the archive. Any
---- other missing entry is an error: vfox skips the check when no checksum is given, so a silent gap would install an
---- unverified archive.
+--- lists the archive, or "pinned" when the release is older than CHECKSUMS_FROM and the plugin pins the archive. A
+--- release from CHECKSUMS_FROM on whose SHA256SUMS lists no archive for the platform has no build for it: the checksum
+--- is nil, and PreInstall refuses the install. Any other missing entry is an error: vfox skips the check when no
+--- checksum is given, so a silent gap would install an unverified archive.
 --- @param version string
 --- @param file_name string
---- @return string checksum
---- @return string source "published" or "pinned"
+--- @return string|nil checksum nil when the release has no build for file_name
+--- @return string|nil source "published" or "pinned"
 function etcd_utils.get_sha256sums(version, file_name)
     local url = etcd_utils.RELEASE_URL .. version .. "/SHA256SUMS"
     local before = etcd_utils.is_before_checksums(version)
@@ -188,7 +210,7 @@ function etcd_utils.get_sha256sums(version, file_name)
     if before then
         return pinned_checksum(version, file_name, url), "pinned"
     end
-    error("no checksum for " .. file_name .. " in " .. url)
+    return nil
 end
 
 --- Returns the note PreInstall prints when an archive is checked against a pinned SHA-256.

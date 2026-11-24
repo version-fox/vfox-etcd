@@ -24,9 +24,9 @@ vfox install etcd@3.5.12
 
 `vfox search etcd` lists the releases that install on Linux amd64, so pick one from that list.
 
-## `no checksum for etcd-v3.4.32-darwin-arm64.zip in ...`
+## `etcd 3.7.4 has no Windows arm64 build, see https://github.com/etcd-io/etcd/releases/tag/v3.7.4 for the archives it has`
 
-The release has no archive for your platform. The message names the archive the plugin wanted. Pick a release that has it, or read [platforms.md](platforms.md). For example, 3.4.32 has no Apple silicon archive, and the arm64 archive for macOS starts with 3.5.5.
+The release has no archive for your platform, so the install stops before anything is downloaded. vfox prints a stack traceback below the message, as it does for every message from a plugin hook. Pick a release that has an archive for your platform, or read [platforms.md](platforms.md). etcd has published no arm64 archive for Windows in any release, so on Windows arm64 this is the message to expect. For example, 3.4.32 has no Apple silicon archive, and the arm64 archive for macOS starts with 3.5.5.
 
 ## `could not download https://github.com/etcd-io/etcd/releases/download/v3.5.0-alpha.0/SHA256SUMS: HTTP 404`
 

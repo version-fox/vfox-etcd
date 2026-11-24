@@ -44,6 +44,16 @@ assert(etcd_utils.archive_name("3.5.12", "linux", "arm64") == "etcd-v3.5.12-linu
 assert(etcd_utils.archive_name("3.5.12", "darwin", "arm64") == "etcd-v3.5.12-darwin-arm64.zip")
 assert(etcd_utils.archive_name("3.5.12", "windows", "amd64") == "etcd-v3.5.12-windows-amd64.zip")
 
+-- A release with no archive for the platform says so, and names the page that lists the archives it has.
+local message = etcd_utils.no_build_message("3.7.4", "windows", "arm64")
+assert(
+    message
+        == "etcd 3.7.4 has no Windows arm64 build, see https://github.com/etcd-io/etcd/releases/tag/v3.7.4 for the archives it has",
+    message
+)
+assert(string.find(etcd_utils.no_build_message("3.4.32", "darwin", "arm64"), "has no macOS arm64 build", 1, true))
+assert(string.find(etcd_utils.no_build_message("3.5.12", "linux", "amd64"), "has no Linux amd64 build", 1, true))
+
 assert(etcd_utils.parse_version("etcd Version: 3.5.12\nGit SHA: 9e2c\nGo OS/Arch: linux/amd64\n") == "3.5.12")
 assert(etcd_utils.parse_version("etcd Version: 3.8.0-alpha.0\r\n") == "3.8.0-alpha.0")
 assert(etcd_utils.parse_version("etcd Version: banana\n") == nil)

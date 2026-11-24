@@ -8,7 +8,7 @@
 | --- | --- | --- | --- |
 | Linux | amd64, arm64, ppc64le, s390x | `.tar.gz` | 发布包不需要额外的软件包。failpoint 构建需要 Git、Go 和 GNU Make。 |
 | macOS | amd64, arm64 | `.zip` | arm64 发布包从 3.5.5 开始提供；3.4.32 只有 amd64 发布包。 |
-| Windows | amd64 | `.zip` | 不支持 `BUILD_WITH_FAILPOINT`，改为安装官方构建版本。 |
+| Windows | amd64 | `.zip` | 没有发布 arm64 发布包，因此在 arm64 上安装会以一条消息停止。不支持 `BUILD_WITH_FAILPOINT`，改为安装官方构建版本。 |
 
 表中列出的 CPU，是 etcd 3.5.12 为其发布了发布包的那些 CPU。插件会请求以 vfox 所报告的 CPU 名称命名的发布包，因此，只要 etcd 发布了某个发布包，它在上述任一 CPU 上的安装方式都相同。
 

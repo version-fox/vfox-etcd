@@ -24,9 +24,9 @@ vfox install etcd@3.5.12
 
 `vfox search etcd` 列出的是可以在 Linux amd64 上安装的发布版本，请从中选择。
 
-## `no checksum for etcd-v3.4.32-darwin-arm64.zip in ...`
+## `etcd 3.7.4 has no Windows arm64 build, see https://github.com/etcd-io/etcd/releases/tag/v3.7.4 for the archives it has`
 
-该发布版本没有适用于你所在平台的发布包。消息中会写明插件所需的那个发布包。请选择包含该发布包的发布版本，或阅读 [platforms.md](platforms.md)。例如，3.4.32 没有适用于 Apple 芯片的发布包，而 macOS 的 arm64 发布包从 3.5.5 开始提供。
+该发布版本没有适用于你所在平台的发布包，因此安装会在下载任何内容之前停止。vfox 会在消息下方打印堆栈回溯，它对插件钩子的每条消息都如此。请选择有适用发布包的发布版本，或阅读 [platforms.md](platforms.md)。etcd 在任何发布版本中都没有发布适用于 Windows 的 arm64 发布包，因此在 Windows arm64 上，应当预期看到这条消息。例如，3.4.32 没有适用于 Apple 芯片的发布包，而 macOS 的 arm64 发布包从 3.5.5 开始提供。
 
 ## `could not download https://github.com/etcd-io/etcd/releases/download/v3.5.0-alpha.0/SHA256SUMS: HTTP 404`
 
