@@ -4,7 +4,7 @@
 
 以下是每个发布版本中用户能够感知到的变化。GitHub 的发布页面列出了对应的拉取请求。
 
-## Unreleased
+## 0.2.4 (2026-11-24)
 
 - 当某个发布版本没有你平台的发布包时，安装会在下载发布包之前停止，写明缺少的平台，例如 `etcd 3.7.4 has no Windows arm64 build`，之后不再出现堆栈回溯。此前它以 `no checksum for ...` 停止，只写出文件名，之后还跟着堆栈回溯。参见 [troubleshooting.md](troubleshooting.md)。
 

@@ -2,7 +2,7 @@
 
 [中文](install-from-source.md) | [English](../install-from-source.md)
 
-`vfox add etcd` 会安装最新的发布版本。若要试用 `main`、某个分支，或你正在开发的改动，请从源码构建插件。插件由 `metadata.lua` 加上 `hooks` 和 `lib` 目录组成，vfox 会从包含它们的 zip 文件中添加插件。
+`vfox add etcd` 只添加插件，`vfox install etcd@latest` 会安装最新的发布版本。若要试用 `main`、某个分支，或你正在开发的改动，请从源码构建插件。插件由 `metadata.lua` 加上 `hooks` 和 `lib` 目录组成，vfox 会从包含它们的 zip 文件中添加插件。
 
 ## Ubuntu 和 macOS
 

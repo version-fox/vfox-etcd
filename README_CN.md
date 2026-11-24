@@ -27,7 +27,7 @@ vfox use -g etcd@3.5.12
 etcd --version
 ```
 
-`vfox add etcd` 会安装最新的发布版本。若要试用 `main`、某个分支，或你正在开发的改动，请参阅 [docs/zh-CN/install-from-source.md](docs/zh-CN/install-from-source.md)。
+`vfox add etcd` 只添加插件，`vfox install etcd@latest` 会安装最新的发布版本。若要试用 `main`、某个分支，或你正在开发的改动，请参阅 [docs/zh-CN/install-from-source.md](docs/zh-CN/install-from-source.md)。
 
 要让 `etcd` 位于 `PATH` 中，需要将 vfox 接入你的 shell，参见其[快速开始](https://vfox.dev/guides/quick-start.html)。`vfox use -g` 会为之后打开的每个新 shell 选择版本，`vfox use` 则只对当前 shell 生效。
 

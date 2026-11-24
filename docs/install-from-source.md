@@ -2,7 +2,7 @@
 
 [中文](zh-CN/install-from-source.md) | [English](install-from-source.md)
 
-`vfox add etcd` installs the latest release. To try `main`, a branch, or a change you are working on, build the plugin from source. A plugin is a `metadata.lua` plus the `hooks` and `lib` directories, and vfox adds one from a zip of them.
+`vfox add etcd` only adds the plugin. `vfox install etcd@latest` installs the latest release. To try `main`, a branch, or a change you are working on, build the plugin from source. A plugin is a `metadata.lua` plus the `hooks` and `lib` directories, and vfox adds one from a zip of them.
 
 ## Ubuntu and macOS
 
