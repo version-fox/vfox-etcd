@@ -82,20 +82,24 @@ end)
 assert(not ok and string.find(tostring(err), "HTTP 404", 1, true), tostring(err))
 status = 200
 
--- A version that is not a release never reaches the network.
+-- A version that is not a release never reaches the network. The hook prints why and returns nothing, so vfox prints
+-- no stack traceback.
 requests = {}
-ok, err = pcall(function()
-    return plugin:PreInstall({ version = "3.5.12; id" })
-end)
-assert(not ok and string.find(tostring(err), "invalid etcd version", 1, true), tostring(err))
+printed = {}
+refused = plugin:PreInstall({ version = "3.5.12; id" })
+assert(refused == nil, tostring(refused))
+assert(#printed == 1 and string.find(printed[1], "invalid etcd version", 1, true), table.concat(printed, "\n"))
 assert(#requests == 0, "no request for an invalid version")
 
 -- A release that does not exist stops before its SHA256SUMS is downloaded, and the message names the release.
 requests = {}
-ok, err = pcall(function()
-    return plugin:PreInstall({ version = "9.9.9" })
-end)
-assert(not ok and string.find(tostring(err), "there is no etcd release 9.9.9", 1, true), tostring(err))
+printed = {}
+refused = plugin:PreInstall({ version = "9.9.9" })
+assert(refused == nil, tostring(refused))
+assert(
+    #printed == 1 and string.find(printed[1], "there is no etcd release 9.9.9", 1, true),
+    table.concat(printed, "\n")
+)
 assert(
     #requests == 1 and requests[1] == "https://github.com/etcd-io/etcd/releases/tag/v9.9.9",
     table.concat(requests, " ")

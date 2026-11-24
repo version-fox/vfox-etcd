@@ -172,19 +172,20 @@ local function pinned_checksum(version, file_name)
     return pins[file_name]
 end
 
---- Stops with a message when GitHub has no release named version. The release page answers 404 for a tag without a
---- release. PreInstall reads it before any archive, checksum or clone, so the message names the release rather than a
---- file that is missing. The API is not used, because it limits anonymous requests.
+--- Returns the message that refuses version when GitHub has no release named version, or nil when it has one. The
+--- release page answers 404 for a tag without a release. PreInstall reads it before any archive, checksum or clone, so
+--- the message names the release rather than a file that is missing. The API is not used, because it limits anonymous
+--- requests.
 --- @param version string
-function etcd_utils.require_release(version)
+--- @return string|nil refusal nil when GitHub has a release named version
+function etcd_utils.release_refusal(version)
     local resp = fetch(etcd_utils.RELEASE_PAGE_URL .. version, 404)
     if resp.status_code == 404 then
-        error(
-            "there is no etcd release "
-                .. version
-                .. ", see https://github.com/etcd-io/etcd/releases for the releases that exist"
-        )
+        return "there is no etcd release "
+            .. version
+            .. ", see https://github.com/etcd-io/etcd/releases for the releases that exist"
     end
+    return nil
 end
 
 --- Returns the SHA-256 for file_name of version, and where it comes from: "published" when the release's SHA256SUMS
@@ -336,23 +337,30 @@ function etcd_utils.missing_build_tools()
     return missing
 end
 
---- Reports whether the value of BUILD_WITH_FAILPOINT asks for the failpoint build. Only "yes" does. Unset, empty and
---- "no" ask for the official build. Any other value stops the install, so that "1" or "true" cannot install the
---- official build without a word.
+--- Returns the message that refuses the value of BUILD_WITH_FAILPOINT, or nil for a value the plugin accepts. Only
+--- "yes" turns on the failpoint build, and unset, empty and "no" install the official build. Any other value stops the
+--- install, so that "1" or "true" cannot install the official build without a word.
+--- @param value string|nil the value of BUILD_WITH_FAILPOINT
+--- @return string|nil refusal
+function etcd_utils.failpoint_refusal(value)
+    if value == nil or value == "" or value == "no" or value == "yes" then
+        return nil
+    end
+    return 'BUILD_WITH_FAILPOINT is "'
+        .. value
+        .. '", but only yes turns on the failpoint build. Unset it to install the official build.'
+end
+
+--- Reports whether the value of BUILD_WITH_FAILPOINT asks for the failpoint build. Only "yes" does. A value that
+--- failpoint_refusal refuses raises its message.
 --- @param value string|nil the value of BUILD_WITH_FAILPOINT
 --- @return boolean
 function etcd_utils.failpoint_requested(value)
-    if value == nil or value == "" or value == "no" then
-        return false
+    local refusal = etcd_utils.failpoint_refusal(value)
+    if refusal ~= nil then
+        error(refusal)
     end
-    if value == "yes" then
-        return true
-    end
-    error(
-        'BUILD_WITH_FAILPOINT is "'
-            .. value
-            .. '", but only yes turns on the failpoint build. Unset it to install the official build.'
-    )
+    return value == "yes"
 end
 
 --- How many levels of Makefiles are read for a gofail target: the Makefile at the tag is level 1, and the files it

@@ -4,6 +4,10 @@
 
 What changed in each release, as a user notices it. GitHub's release pages list the pull requests.
 
+## Unreleased
+
+- A refusal of an install prints its message without a stack traceback: an invalid version, a release that GitHub does not have, a `BUILD_WITH_FAILPOINT` value other than `yes`, a missing `git`, `go` or `make` for the failpoint build, and a release with no gofail target. Before, each of them printed its message with a stack traceback below it. See [troubleshooting.md](troubleshooting.md).
+
 ## 0.2.4 (2026-11-24)
 
 - An install of a release that has no archive for your platform stops before the archive is downloaded. The message names the platform, such as `etcd 3.7.4 has no Windows arm64 build`, and no stack traceback follows it. Before, it stopped with `no checksum for ...`, which named the file, and a stack traceback followed. See [troubleshooting.md](troubleshooting.md).
