@@ -4,7 +4,7 @@
 
 以下是每个发布版本中用户能够感知到的变化。GitHub 的发布页面列出了对应的拉取请求。
 
-## Unreleased
+## 0.2.5 (2026-11-24)
 
 - 拒绝安装时，插件会打印消息，之后不再出现堆栈回溯。这包括：版本不是发布版本、GitHub 上没有该发布版本、`BUILD_WITH_FAILPOINT` 的值不是 `yes`、failpoint 构建缺少 `git`、`go` 或 `make`，以及发布版本没有 gofail 目标。此前这些情况都在消息之后附带堆栈回溯。参见 [troubleshooting.md](troubleshooting.md)。
 
