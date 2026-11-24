@@ -13,8 +13,8 @@
 -- limitations under the License.
 
 -- PreInstall for an archive of a release before 3.4.0 uses the checksum the release publishes, and the SHA-256 pinned
--- in pinned_checksums.lua when it publishes none. A release with no pin, a failure other than 404, and a release from
--- 3.4.0 on without a checksum all stop the install.
+-- in pinned_checksums.lua when it publishes none. A release with no pin refuses the install, a failure other than 404
+-- stops it, and so does a release from 3.4.0 on without a checksum.
 package.path = "./lib/?.lua;" .. package.path
 local test = require("vfox.test")
 local pinned = require("pinned_checksums")
@@ -79,8 +79,13 @@ info = install("0.4.9")
 assert(info.sha256 == PINNED, tostring(info.sha256))
 answers[BASE .. "0.4.9/SHA256SUMS"] = nil
 
--- A release with no pinned archive, such as 0.1.0, which has no linux-amd64 archive, stops the install.
-assert(string.find(failure("0.1.0"), "none is pinned", 1, true))
+-- A release with no pinned archive, such as 0.1.0, which has no linux-amd64 archive, refuses the install. The hook
+-- prints the message and returns nothing, so vfox prints no traceback.
+printed = {}
+assert(plugin:PreInstall({ version = "0.1.0" }) == nil)
+local expected = "etcd 0.1.0 has no Linux amd64 build that the plugin has a checksum for, see "
+    .. "https://github.com/etcd-io/etcd/releases/tag/v0.1.0 for the archives it has"
+assert(#printed == 1 and printed[1] == expected, table.concat(printed, "\n"))
 
 -- A failure other than 404 stops the install, even for an old release.
 answers[BASE .. "3.3.13/SHA256SUMS"] = { status_code = 500, body = "", headers = {} }

@@ -54,6 +54,14 @@ assert(
 assert(string.find(etcd_utils.no_build_message("3.4.32", "darwin", "arm64"), "has no macOS arm64 build", 1, true))
 assert(string.find(etcd_utils.no_build_message("3.5.12", "linux", "amd64"), "has no Linux amd64 build", 1, true))
 
+-- Before 3.4.0 the plugin knows only the archives it pins, so the message does not say that there is no build.
+local old_message = etcd_utils.no_build_message("3.3.13", "windows", "arm64")
+assert(
+    old_message
+        == "etcd 3.3.13 has no Windows arm64 build that the plugin has a checksum for, see https://github.com/etcd-io/etcd/releases/tag/v3.3.13 for the archives it has",
+    old_message
+)
+
 assert(etcd_utils.parse_version("etcd Version: 3.5.12\nGit SHA: 9e2c\nGo OS/Arch: linux/amd64\n") == "3.5.12")
 assert(etcd_utils.parse_version("etcd Version: 3.8.0-alpha.0\r\n") == "3.8.0-alpha.0")
 assert(etcd_utils.parse_version("etcd Version: banana\n") == nil)

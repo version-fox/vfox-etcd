@@ -26,7 +26,7 @@ vfox install etcd@3.5.12
 
 ## `etcd 3.7.4 has no Windows arm64 build, see https://github.com/etcd-io/etcd/releases/tag/v3.7.4 for the archives it has`
 
-该发布版本没有适用于你所在平台的发布包，因此安装会在下载任何内容之前停止。vfox 会在消息下方打印堆栈回溯，它对插件钩子的每条消息都如此。请选择有适用发布包的发布版本，或阅读 [platforms.md](platforms.md)。etcd 在任何发布版本中都没有发布适用于 Windows 的 arm64 发布包，因此在 Windows arm64 上，应当预期看到这条消息。例如，3.4.32 没有适用于 Apple 芯片的发布包，而 macOS 的 arm64 发布包从 3.5.5 开始提供。
+该发布版本没有适用于你所在平台的发布包，因此安装会在下载发布包之前停止。消息之后不会出现堆栈回溯。vfox 随后会报告 `no installable runtime provided`，这是插件的 `PreInstall` 没有返回任何结果时 vfox 报告的内容。请选择有适用发布包的发布版本，或阅读 [platforms.md](platforms.md)。etcd 在任何发布版本中都没有发布适用于 Windows 的 arm64 发布包，因此在 Windows arm64 上，应当预期看到这条消息。例如，3.4.32 没有适用于 Apple 芯片的发布包，而 macOS 的 arm64 发布包从 3.5.5 开始提供。
 
 ## `could not download https://github.com/etcd-io/etcd/releases/download/v3.5.0-alpha.0/SHA256SUMS: HTTP 404`
 
@@ -36,9 +36,9 @@ vfox install etcd@3.5.12
 
 该发布版本早于 3.4.0，其 `SHA256SUMS` 中没有该发布包的条目，或者根本没有该文件。插件会用为该发布包固定的 SHA-256 值进行核对，并在安装前打印这一行。这些固定值取自插件固定时 GitHub 提供的发布包，因此该检查能发现之后的变动，但无法发现固定时下载到的文件本身有问题。
 
-## `no checksum for ... and none is pinned for it in this plugin`
+## `etcd 3.3.13 has no Windows arm64 build that the plugin has a checksum for, see https://github.com/etcd-io/etcd/releases/tag/v3.3.13 for the archives it has`
 
-该发布版本没有适用于该平台的发布包，或者该版本不在版本列表中，因此插件没有它的 checksum，也不会安装它。请选择其他发布版本，或参阅 [platforms.md](platforms.md)。
+该发布版本早于 3.4.0。它的 `SHA256SUMS` 可能不存在，或者没有列出你所在平台的发布包，而插件也没有为该发布包固定校验值。插件不会安装无法校验的发布包，因此安装会在下载发布包之前停止，消息之后不会出现堆栈回溯。消息没有说该发布版本没有构建，因为插件只知道它固定了哪些发布包。请选择其他发布版本，或参阅 [platforms.md](platforms.md)。
 
 ## `could not download https://...`
 

@@ -29,6 +29,12 @@ local CHECKSUM = "33333333333333333333333333333333333333333333333333333333333333
 local sums = "4444444444444444444444444444444444444444444444444444444444444444  etcd-v3.7.4-windows-amd64.zip\n"
 local requests = {}
 
+-- The lines the hook prints. A refusal prints its message and returns nothing, instead of raising an error.
+local printed = {}
+print = function(line)
+    table.insert(printed, line)
+end
+
 local plugin = test.load({
     os = "windows",
     arch = "arm64",
@@ -45,14 +51,13 @@ local plugin = test.load({
     end,
 })
 
--- No arm64 build: the install stops with a message that names the platform, and the archive is never requested.
-local ok, err = pcall(function()
-    return plugin:PreInstall({ version = VERSION })
-end)
-assert(
-    not ok and string.find(tostring(err), "etcd 3.7.4 has no Windows arm64 build, see " .. RELEASE_PAGE, 1, true),
-    tostring(err)
-)
+-- No arm64 build: the hook prints a message that names the platform and returns nothing, so vfox stops the install
+-- with no traceback, and the archive is never requested.
+printed = {}
+local refused = plugin:PreInstall({ version = VERSION })
+assert(refused == nil, tostring(refused))
+local expected = "etcd 3.7.4 has no Windows arm64 build, see " .. RELEASE_PAGE .. " for the archives it has"
+assert(#printed == 1 and printed[1] == expected, table.concat(printed, "\n"))
 assert(#requests == 2 and requests[1] == RELEASE_PAGE and requests[2] == SHA256SUMS_URL, table.concat(requests, " "))
 
 -- The release lists the arm64 archive: the install goes on with its URL and its checksum.
