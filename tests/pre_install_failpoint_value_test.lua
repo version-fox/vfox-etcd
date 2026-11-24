@@ -16,6 +16,12 @@
 -- not install the official build without a word.
 local test = require("vfox.test")
 
+-- The lines the hook prints. A refusal prints its message and returns nothing, instead of raising an error.
+local printed = {}
+print = function(line)
+    table.insert(printed, line)
+end
+
 local requested = false
 local plugin = test.load({
     os = "linux",
@@ -27,8 +33,7 @@ local plugin = test.load({
     end,
 })
 
-local ok, err = pcall(function()
-    return plugin:PreInstall({ version = "3.5.12" })
-end)
-assert(not ok and string.find(tostring(err), 'BUILD_WITH_FAILPOINT is "1"', 1, true), tostring(err))
+local refused = plugin:PreInstall({ version = "3.5.12" })
+assert(refused == nil, tostring(refused))
+assert(#printed == 1 and string.find(printed[1], 'BUILD_WITH_FAILPOINT is "1"', 1, true), table.concat(printed, "\n"))
 assert(not requested, "an unrecognised value downloads nothing")

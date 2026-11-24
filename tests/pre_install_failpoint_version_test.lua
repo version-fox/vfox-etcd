@@ -37,6 +37,12 @@ local MAKEFILES = {
     [RAW .. "3.7.4/tests/robustness/Makefile"] = "install-gofail: $(GOPATH)/bin/gofail\n\tgo install\n",
 }
 
+-- The lines the hook prints. A refusal prints its message and returns nothing, instead of raising an error.
+local printed = {}
+print = function(line)
+    table.insert(printed, line)
+end
+
 local requests = {}
 local plugin = test.load({
     os = "linux",
@@ -58,38 +64,46 @@ local plugin = test.load({
     end,
 })
 
--- Runs PreInstall for version, and returns what it returned, or the error, with the requests it made.
+-- Runs PreInstall for version, and returns what it returned, with the requests it made and the lines it printed.
 local function install(version)
     requests = {}
-    return pcall(function()
-        return plugin:PreInstall({ version = version })
-    end)
+    printed = {}
+    return plugin:PreInstall({ version = version })
 end
 
-local ok, err = install("3.5.5")
-assert(not ok and string.find(tostring(err), "etcd 3.5.5 has no failpoint build", 1, true), tostring(err))
-assert(string.find(tostring(err), "such as 3.5.12", 1, true), tostring(err))
+local info = install("3.5.5")
+assert(info == nil, tostring(info))
+assert(
+    #printed == 1 and string.find(printed[1], "etcd 3.5.5 has no failpoint build", 1, true),
+    table.concat(printed, "\n")
+)
+assert(string.find(printed[1], "such as 3.5.12", 1, true), printed[1])
 assert(
     #requests == 2 and requests[2] == RAW .. "3.5.5/Makefile",
     "the release page, then the Makefile, and nothing else: " .. table.concat(requests, " ")
 )
 
-local info
-ok, info = install("3.5.12")
-assert(ok and info.version == "3.5.12", tostring(info))
+info = install("3.5.12")
+assert(info.version == "3.5.12", tostring(info.version))
 
-ok, info = install("3.6.0-rc.0")
-assert(ok and info.version == "3.6.0-rc.0", tostring(info))
+info = install("3.6.0-rc.0")
+assert(info.version == "3.6.0-rc.0", tostring(info.version))
 assert(#requests == 3 and requests[3] == RAW .. "3.6.0-rc.0/tests/robustness/makefile.mk", table.concat(requests, " "))
 
-ok, err = install("3.6.0-alpha.0")
-assert(not ok and string.find(tostring(err), "etcd 3.6.0-alpha.0 has no failpoint build", 1, true), tostring(err))
+assert(install("3.6.0-alpha.0") == nil)
+assert(
+    #printed == 1 and string.find(printed[1], "etcd 3.6.0-alpha.0 has no failpoint build", 1, true),
+    table.concat(printed, "\n")
+)
 
-ok, info = install("3.7.4")
-assert(ok and info.version == "3.7.4", tostring(info))
+info = install("3.7.4")
+assert(info.version == "3.7.4", tostring(info.version))
 assert(#requests == 3 and requests[3] == RAW .. "3.7.4/tests/robustness/Makefile", table.concat(requests, " "))
 
 -- A release that does not exist is named as such, before its Makefile is looked for.
-ok, err = install("9.9.9")
-assert(not ok and string.find(tostring(err), "there is no etcd release 9.9.9", 1, true), tostring(err))
+assert(install("9.9.9") == nil)
+assert(
+    #printed == 1 and string.find(printed[1], "there is no etcd release 9.9.9", 1, true),
+    table.concat(printed, "\n")
+)
 assert(#requests == 1, table.concat(requests, " "))

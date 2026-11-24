@@ -24,6 +24,12 @@ etcd_utils.has_command = function(name)
     return present[name] == true
 end
 
+-- The lines the hook prints. A refusal prints its message and returns nothing, instead of raising an error.
+local printed = {}
+print = function(line)
+    table.insert(printed, line)
+end
+
 local requested = false
 local plugin = test.load({
     os = "linux",
@@ -35,9 +41,8 @@ local plugin = test.load({
     end,
 })
 
-local ok, err = pcall(function()
-    return plugin:PreInstall({ version = "3.5.12" })
-end)
-assert(not ok and string.find(tostring(err), "git, go, make on PATH", 1, true), tostring(err))
-assert(string.find(tostring(err), "not found: go", 1, true), tostring(err))
+local refused = plugin:PreInstall({ version = "3.5.12" })
+assert(refused == nil, tostring(refused))
+assert(#printed == 1 and string.find(printed[1], "git, go, make on PATH", 1, true), table.concat(printed, "\n"))
+assert(string.find(printed[1], "not found: go", 1, true), printed[1])
 assert(not requested, "nothing is downloaded when a build tool is missing")

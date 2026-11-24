@@ -151,6 +151,19 @@ for _, value in ipairs({ "1", "true", "YES", "yes " }) do
     assert(not ok and string.find(tostring(err), "BUILD_WITH_FAILPOINT is", 1, true), "should refuse " .. value)
 end
 
+-- The refusal is the message that PreInstall prints. A value the plugin accepts has none.
+assert(etcd_utils.failpoint_refusal(nil) == nil)
+assert(etcd_utils.failpoint_refusal("") == nil)
+assert(etcd_utils.failpoint_refusal("no") == nil)
+assert(etcd_utils.failpoint_refusal("yes") == nil)
+for _, value in ipairs({ "1", "true", "YES", "yes " }) do
+    local refusal = etcd_utils.failpoint_refusal(value)
+    assert(
+        refusal and string.find(refusal, 'BUILD_WITH_FAILPOINT is "' .. value .. '"', 1, true),
+        "should refuse " .. value
+    )
+end
+
 -- A failpoint build needs git, go and make on PATH. The missing ones are named, in their order.
 local present = {}
 etcd_utils.has_command = function(name)

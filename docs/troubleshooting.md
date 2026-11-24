@@ -4,6 +4,8 @@
 
 The messages below come from the plugin, or from vfox while it runs the plugin's hooks.
 
+When the plugin refuses an install, it prints its message without a stack traceback, and vfox then reports `no installable runtime provided`. An error that the plugin raises, such as a failed download, still comes with a stack traceback.
+
 ## `invalid etcd version 3.5`
 
 The plugin needs a full release, such as `3.5.12`. Partial versions are refused, because they do not name one download:
