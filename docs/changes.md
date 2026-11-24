@@ -4,7 +4,7 @@
 
 What changed in each release, as a user notices it. GitHub's release pages list the pull requests.
 
-## Unreleased
+## 0.2.5 (2026-11-24)
 
 - A refusal of an install prints its message without a stack traceback: an invalid version, a release that GitHub does not have, a `BUILD_WITH_FAILPOINT` value other than `yes`, a missing `git`, `go` or `make` for the failpoint build, and a release with no gofail target. Before, each of them printed its message with a stack traceback below it. See [troubleshooting.md](troubleshooting.md).
 

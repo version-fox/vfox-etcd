@@ -32,7 +32,7 @@ vfox install etcd@3.5.12
 
 ## `could not download https://github.com/etcd-io/etcd/releases/download/v3.5.0-alpha.0/SHA256SUMS: HTTP 404`
 
-该发布版本没有发布 `SHA256SUMS`，且版本号为 3.4.0 或更高。插件不会在没有校验和的情况下安装此类发布版本的发布包，因此安装会中止。请选择 3.4.0 或更高、且发布了该文件的版本。早于 3.4.0 的发布版本会改用固定的校验值进行核对，参见下一节。
+该发布版本没有发布 `SHA256SUMS`，且版本号为 3.4.0 或更高。插件不会在没有校验和的情况下安装此类发布版本的发布包，因此安装会中止。请从 `vfox search etcd` 的列表中选择版本，该列表会略去 3.4.0 或更高、却未发布该文件的版本。早于 3.4.0 的发布版本会改用固定的校验值进行核对，参见下一节。
 
 ## `etcd 0.4.9 publishes no checksum for ..., so the archive is checked against the SHA-256 pinned in this plugin.`
 

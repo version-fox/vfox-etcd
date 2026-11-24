@@ -32,7 +32,7 @@ The release has no archive for your platform, so the install stops before the ar
 
 ## `could not download https://github.com/etcd-io/etcd/releases/download/v3.5.0-alpha.0/SHA256SUMS: HTTP 404`
 
-The release publishes no `SHA256SUMS`, and it is 3.4.0 or later. The plugin does not install an archive from such a release without a checksum, so the install stops. Pick a release from 3.4.0 on, which publishes one. Releases before 3.4.0 are checked against pinned checksums instead, see the next section.
+The release publishes no `SHA256SUMS`, and it is 3.4.0 or later. The plugin does not install an archive from such a release without a checksum, so the install stops. Pick a release from `vfox search etcd`: the list leaves out the releases from 3.4.0 on that publish no checksum. Releases before 3.4.0 are checked against pinned checksums instead, see the next section.
 
 ## `etcd 0.4.9 publishes no checksum for ..., so the archive is checked against the SHA-256 pinned in this plugin.`
 
